@@ -1,5 +1,11 @@
-import "./sass/main.scss";
+import "./openai/sass/hero.scss";
+import videoBg from "./additional/video-hero.mp4";
 
 export default function App() {
-  return <div>hello world</div>;
+  return (
+    <section className="openai-background">
+      <video src={videoBg} loop muted />
+      <button className="btn">ChatGPT</button>
+    </section>
+  );
 }
