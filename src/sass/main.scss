@@ -1,10 +1,44 @@
 @import "./abstracts/variables";
 @import "./abstracts/mixins";
+@import "./abstracts/breakpoints";
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: inherit;
+  font-family: "Roboto", sans-serif;
+}
+
+html {
+  font-size: 75%; //1 rem = 12px
+
+  @include respond(sm) {
+    font-size: 81.25%; //1 rem = 13px
+  }
+  @include respond(md) {
+    font-size: 87.5%; //1 rem = 14px
+  }
+  @include respond(xl) {
+    font-size: 93.75%; // 1rem = 15px
+  }
+  @include respond(xxl) {
+    font-size: 100; // 1rem = 16px
+  }
+}
+
+input,
+button,
+select,
+textarea,
+optgroup,
+option {
+  font-family: inherit;
+  font-size: inherit;
+  font-style: inherit;
+  font-weight: inherit;
+}
+
+h6 {
 }
 
 img {
