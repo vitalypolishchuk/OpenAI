@@ -1,0 +1,13 @@
+@import "./abstracts/variables";
+
+// These styles are applied for OpenAI page only
+
+a {
+  color: $clr-primary;
+  font-size: 1.05rem;
+  letter-spacing: $letter-spacing-md;
+
+  &:not(.openai__title--spans):hover {
+    color: $clr-primary-hover;
+  }
+}
