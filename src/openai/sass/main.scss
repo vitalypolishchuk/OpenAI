@@ -11,3 +11,16 @@ a {
     color: $clr-primary-hover;
   }
 }
+
+.animation-opacity {
+  animation: opacityOff 2s normal forwards;
+}
+
+@keyframes opacityOff {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
