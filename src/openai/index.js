@@ -18,7 +18,7 @@ export default function MainPage() {
   return (
     <Fragment>
       <section className="openai-hero">
-        <video src={videoBg} ref={videoRef} loop muted autoPlay />
+        <video src={videoBg} ref={videoRef} loop muted />
         <img src={thumbnail} ref={imgRef}></img>
         <div className="openai__title">
           <Link to="/chatgpt">Try ChatGPT ↗</Link>

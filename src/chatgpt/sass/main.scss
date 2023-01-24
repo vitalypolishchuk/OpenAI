@@ -1,5 +1,31 @@
-@import "../sass/main.scss";
+@import "../../sass/main.scss";
+@import "./abstracts/variables.scss"; // variables are defined after "main.scss", because main.scss have their own variables. We need to overwrite them.
 
-video {
-  outline: 2px solid red;
+.speech-recongition {
+  background-color: $clr-secondary;
+
+  &__icons {
+    color: $clr-additional;
+    display: inline-block;
+    width: 1rem;
+    cursor: pointer;
+
+    .bars,
+    .microphone {
+      width: inherit;
+      height: 100%;
+    }
+  }
+
+  &__result {
+    max-height: 200px;
+    padding: 20px;
+    outline: 2px solid red;
+    background-color: $clr-tertiary;
+    border: 1px solid black;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 1.3rem;
+    line-height: 2rem;
+  }
 }
