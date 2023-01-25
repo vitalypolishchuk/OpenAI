@@ -1,31 +1,197 @@
 @import "../../sass/main.scss";
 @import "./abstracts/variables.scss"; // variables are defined after "main.scss", because main.scss have their own variables. We need to overwrite them.
 
-.speech-recongition {
+// body {
+//   background-color: $clr-primary;
+// }
+
+/* width */
+::-webkit-scrollbar {
+  width: 7px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: transparent;
+  // border-radius: 10px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: $clr-light;
+  border-radius: 10px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: $clr-light-2;
+}
+
+.gpt-main-container {
+  background-color: $clr-primary;
+}
+
+.gpt-header {
+  border: 1px solid;
+  height: 40px;
+  border-bottom: 1px solid $clr-light;
   background-color: $clr-secondary;
+  position: relative;
 
-  &__icons {
+  &__center {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: inherit;
+    width: 95%;
+  }
+
+  &__text {
+    color: $clr-light-2;
+    font-size: 1.3rem;
+    font-weight: 100;
+  }
+}
+
+.gpt-btn {
+  background-color: transparent;
+  color: $clr-light-2;
+  border: none;
+  font-size: 1.7rem;
+  cursor: pointer;
+
+  &:hover {
+    color: white;
+  }
+}
+
+.gpt-sidemenu {
+  max-width: 350px;
+  left: -100%;
+  width: 42vw;
+  position: absolute;
+  top: 0;
+  height: 100vh;
+  z-index: 999;
+  background-color: rgb(32, 33, 35);
+  transition: all 0.6s;
+
+  &__close {
+    position: absolute;
+    left: 103%;
+    top: 10px;
+    font-size: 2rem;
+    color: #ffffff;
+    border: 2px solid #ffffff;
+    border-radius: 3px;
+    padding: 0.2rem 0.8rem;
+  }
+}
+
+.chat-gpt {
+  background-color: $clr-secondary;
+  border-top: 1px solid $clr-light;
+  height: 90px;
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+
+  .bars,
+  .microphone {
+    position: absolute;
+    top: 16.5%;
     color: $clr-additional;
-    display: inline-block;
+    // display: inline-block;
     width: 1rem;
-    cursor: pointer;
+    width: inherit;
+    width: min(20px, 5%);
+    height: 20px;
+  }
 
-    .bars,
-    .microphone {
-      width: inherit;
-      height: 100%;
-    }
+  .microphone-active {
+    color: rgb(128, 128, 128);
+  }
+
+  .bars {
+    left: 2%;
+  }
+  .microphone {
+    left: 95%;
+  }
+  .microphone {
+    cursor: pointer;
+    right: 0;
   }
 
   &__result {
-    max-height: 200px;
-    padding: 20px;
-    outline: 2px solid red;
+    box-sizing: content-box;
+    // height: 40px;
+    position: absolute;
+    width: 85%;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 8%;
     background-color: $clr-tertiary;
-    border: 1px solid black;
-    color: #ffffff;
-    font-family: inherit;
-    font-size: 1.3rem;
-    line-height: 2rem;
+    border-radius: 6px;
+
+    textarea {
+      background-color: $clr-tertiary;
+      position: absolute;
+      top: 50%;
+      left: 2%;
+      width: 98%;
+      transform: translateY(-50%);
+      resize: none;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 1.3rem;
+    }
   }
+
+  &__version {
+    position: absolute;
+    bottom: 20%;
+    color: $clr-text;
+    text-align: center;
+    width: 95%;
+    left: 50%;
+    transform: translateX(-50%);
+
+    @include respond(sm) {
+      bottom: 5%;
+    }
+
+    span:first-child {
+      text-decoration-line: underline;
+    }
+    span:nth-child(2) {
+      display: none;
+    }
+
+    @include respond(sm) {
+      span:nth-child(2) {
+        display: inline;
+      }
+    }
+  }
+}
+
+.overlay {
+  position: absolute;
+  z-index: 900;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(77, 79, 95);
+  opacity: 0;
+  transition: 0.3s all;
+}
+
+.visible-overlay {
+  opacity: 0.6;
 }

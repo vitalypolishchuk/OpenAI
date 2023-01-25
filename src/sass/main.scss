@@ -63,6 +63,15 @@ a {
   text-decoration: none;
 }
 
+textarea {
+  border-style: none;
+  border-color: Transparent;
+}
+
+textarea:focus {
+  outline: none;
+}
+
 .none {
   display: none;
 }
