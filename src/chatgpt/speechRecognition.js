@@ -5,10 +5,17 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMicrophone, faBars, faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
 import barsSvg from "../additional/bars.svg";
 
-const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
-const recognition = new SpeechRecognitionAPI();
+// check if mobile or web
+const x_mobileFlg = window.navigator.userAgentData.mobile;
 
-recognition.continuous = true;
+const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = new SpeechRecognitionAPI();
+if (x_mobileFlg) {
+  recognition.continuous = false;
+} else {
+  recognition.continuous = true;
+}
+console.log(recognition.continuous);
 recognition.interimResults = true;
 recognition.lang = "en-US";
 
@@ -56,7 +63,6 @@ export default function SpeechRecognition() {
         };
       } else {
         recognition.stop();
-        console.log("here");
         refMicrophone.current.classList.remove("microphone-active");
         recognition.onend = () => {};
         barsRef.current.classList.add("none");
