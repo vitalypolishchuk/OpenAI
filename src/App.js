@@ -3,7 +3,7 @@ import MainPage from "./openai";
 import Chatgpt from "./chatgpt";
 import Dalle2 from "./dalle2";
 import Whisper from "./whisper";
-import SpeechRecognition from "./chatgpt/speechRecognition";
+import ChatGPT from "./chatgpt";
 
 export default function App() {
   return (
@@ -12,7 +12,6 @@ export default function App() {
         <Routes>
           <Route path="/" element={<MainPage />} />
           <Route path="/chatgpt" element={<Chatgpt />} />
-          <Route path="/chatgpt/speech-recognition" element={<SpeechRecognition />} />
           <Route path="/dalle" element={<Dalle2 />} />
           <Route path="/whisper" element={<Whisper />} />
         </Routes>

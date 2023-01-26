@@ -1,17 +1,18 @@
 import "./sass/main.scss";
 import { useState, useEffect, useRef } from "react";
-import { createSpeechlySpeechRecognition } from "@speechly/speech-recognition-polyfill";
-import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
 import { v4 as uniqueId } from "uuid";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMicrophone, faBars, faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
 import barsSvg from "../additional/bars.svg";
 
-const appId = "b2638ffb-3015-4690-8ead-b919df798c4b";
-const SpeechlySpeechRecognition = createSpeechlySpeechRecognition(appId);
-SpeechRecognition.applyPolyfill(SpeechlySpeechRecognition);
+const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+const recognition = new SpeechRecognitionAPI();
 
-export default function ChatGPT() {
+recognition.continuous = true;
+recognition.interimResults = true;
+recognition.lang = "en-US";
+
+export default function SpeechRecognition() {
   const [mainContainerHeight, setMainContainerHeight] = useState(100);
   const [isListening, setIsListening] = useState(false);
   const [text, setText] = useState("");
@@ -22,17 +23,6 @@ export default function ChatGPT() {
   const refTextArea = useRef();
   const refSideMenu = useRef();
   const refOverlay = useRef();
-  const [changedTranscript, setChangedTranscript] = useState("");
-
-  let { transcript, resetTranscript, listening, browserSupportsSpeechRecognition, isMicrophoneAvailable } = useSpeechRecognition();
-
-  useEffect(() => {
-    setText(changedTranscript + +" " + transcript);
-  }, [transcript]);
-
-  useEffect(() => {
-    resetTranscript();
-  }, [changedTranscript]);
 
   useEffect(() => {
     setMainContainerHeight(window.innerHeight - containerHeight - 40);
@@ -45,13 +35,6 @@ export default function ChatGPT() {
   useEffect(() => {
     window.addEventListener("resize", onResize);
 
-    if (browserSupportsSpeechRecognition) {
-      refMicrophone.current.classList.remove("none");
-    }
-    if (!isMicrophoneAvailable) {
-      // Render some fallback content
-    }
-
     return () => {
       window.removeEventListener("resize", onResize);
     };
@@ -62,18 +45,36 @@ export default function ChatGPT() {
   }, [text]);
 
   function handleListen() {
-    if (isListening) {
-      SpeechRecognition.startListening({ continuous: true });
-      refMicrophone.current.classList.add("microphone-active");
-      barsRef.current.classList.remove("none");
+    try {
+      if (isListening) {
+        refMicrophone.current.classList.add("microphone-active");
 
-      if (!browserSupportsSpeechRecognition) {
-        return <span>Browser doesn't support speech recognition.</span>;
+        recognition.start();
+        barsRef.current.classList.remove("none");
+        recognition.onend = () => {
+          recognition.start();
+        };
+      } else {
+        recognition.stop();
+        console.log("here");
+        refMicrophone.current.classList.remove("microphone-active");
+        recognition.onend = () => {};
+        barsRef.current.classList.add("none");
       }
-    } else {
-      SpeechRecognition.stopListening();
-      refMicrophone.current.classList.remove("microphone-active");
-      barsRef.current.classList.add("none");
+      // recognition.onstart = () => {
+      //   console.log("Recognition is on");
+      // };
+      recognition.onresult = (e) => {
+        const transcript = Array.from(e.results)
+          .map((result) => result[0].transcript)
+          .join("");
+        setText(transcript);
+        recognition.onerror = (event) => {
+          throw new Error(event);
+        };
+      };
+    } catch (err) {
+      console.log(err);
     }
   }
 
@@ -140,17 +141,9 @@ export default function ChatGPT() {
       <div className="chat-gpt" style={{ height: 60 + containerHeight + "px" }}>
         <img src={barsSvg} ref={barsRef} className="bars none" />
         <div className="chat-gpt__result" style={{ height: containerHeight + "px" }}>
-          <textarea
-            ref={refTextArea}
-            rows={1}
-            value={text}
-            onChange={(e) => {
-              setText(e.target.value);
-              setChangedTranscript(e.target.value);
-            }}
-          />
+          <textarea ref={refTextArea} rows={1} value={text} onChange={(e) => setText(e.target.value)} />
         </div>
-        <FontAwesomeIcon icon={faMicrophone} ref={refMicrophone} className="microphone none" onClick={() => setIsListening(!isListening)} />
+        <FontAwesomeIcon icon={faMicrophone} ref={refMicrophone} className="microphone" onClick={() => setIsListening(!isListening)} />
         <div className="chat-gpt__version">
           <span>ChatGPT Jan 9 Version.</span>
           <span>

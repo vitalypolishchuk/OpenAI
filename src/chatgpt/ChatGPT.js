@@ -1,25 +1,13 @@
 import "./sass/main.scss";
 import { useState, useEffect, useRef } from "react";
+import { createSpeechlySpeechRecognition } from "@speechly/speech-recognition-polyfill";
+import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
 import { v4 as uniqueId } from "uuid";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMicrophone, faBars, faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
 import barsSvg from "../additional/bars.svg";
 
-// check if mobile or web
-const x_mobileFlg = window.navigator.userAgentData.mobile;
-
-const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
-let recognition = new SpeechRecognitionAPI();
-if (x_mobileFlg) {
-  recognition.continuous = false;
-} else {
-  recognition.continuous = true;
-}
-console.log(recognition.continuous);
-recognition.interimResults = true;
-recognition.lang = "en-US";
-
-export default function SpeechRecognition() {
+export default function ChatGPT() {
   const [mainContainerHeight, setMainContainerHeight] = useState(100);
   const [isListening, setIsListening] = useState(false);
   const [text, setText] = useState("");
@@ -51,38 +39,7 @@ export default function SpeechRecognition() {
     handleText();
   }, [text]);
 
-  function handleListen() {
-    try {
-      if (isListening) {
-        refMicrophone.current.classList.add("microphone-active");
-
-        recognition.start();
-        barsRef.current.classList.remove("none");
-        recognition.onend = () => {
-          recognition.start();
-        };
-      } else {
-        recognition.stop();
-        refMicrophone.current.classList.remove("microphone-active");
-        recognition.onend = () => {};
-        barsRef.current.classList.add("none");
-      }
-      // recognition.onstart = () => {
-      //   console.log("Recognition is on");
-      // };
-      recognition.onresult = (e) => {
-        const transcript = Array.from(e.results)
-          .map((result) => result[0].transcript)
-          .join("");
-        setText(transcript);
-        recognition.onerror = (event) => {
-          throw new Error(event);
-        };
-      };
-    } catch (err) {
-      console.log(err);
-    }
-  }
+  function handleListen() {}
 
   function onResize() {
     handleText();
