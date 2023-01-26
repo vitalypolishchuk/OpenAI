@@ -126,46 +126,48 @@ export default function ChatGPT() {
   }
 
   return (
-    <div className="gpt-main-container" style={{ height: mainContainerHeight + "px" }}>
-      <header className="gpt-header">
-        <header className="gpt-header__center">
-          <button onClick={handleSideMenu} className="gpt-header__menu gpt-btn">
-            <FontAwesomeIcon icon={faBars} />
-          </button>
-          <h5 className="gpt-header__text">useEffect and window.innerHeight</h5>
-          <button className="gpt-header__plus gpt-btn">
-            <FontAwesomeIcon icon={faPlus} />
-          </button>
-        </header>
-      </header>
+    <div className="gpt">
       <aside className="gpt-sidemenu" ref={refSideMenu}>
         menu
         <button onClick={handleCloseSideMenu} className="gpt-sidemenu__close gpt-btn">
           <FontAwesomeIcon icon={faXmark} />
         </button>
       </aside>
-      <div className="chat-gpt" style={{ height: 60 + containerHeight + "px" }}>
-        <img src={barsSvg} ref={barsRef} className="bars none" />
-        <div className="chat-gpt__result" style={{ height: containerHeight + "px" }}>
-          <textarea
-            ref={refTextArea}
-            rows={1}
-            value={text}
-            onChange={(e) => {
-              setText(e.target.value);
-              setchatTranscript(e.target.value);
-            }}
-          />
+      <div className="gpt-main-container" style={{ height: mainContainerHeight + "px" }}>
+        <header className="gpt-header">
+          <header className="gpt-header__center">
+            <button onClick={handleSideMenu} className="gpt-header__menu gpt-btn">
+              <FontAwesomeIcon icon={faBars} />
+            </button>
+            <h5 className="gpt-header__text">useEffect and window.innerHeight</h5>
+            <button className="gpt-header__plus gpt-btn">
+              <FontAwesomeIcon icon={faPlus} />
+            </button>
+          </header>
+        </header>
+        <div className="chat-gpt" style={{ height: 60 + containerHeight + "px" }}>
+          <div className="chat-gpt__result" style={{ height: containerHeight + "px" }}>
+            <img src={barsSvg} ref={barsRef} className="bars none" />
+            <textarea
+              ref={refTextArea}
+              rows={1}
+              value={text}
+              onChange={(e) => {
+                setText(e.target.value);
+                setchatTranscript(e.target.value);
+              }}
+            />
+            <FontAwesomeIcon icon={faMicrophone} ref={refMicrophone} className="microphone none" onClick={() => setIsListening(!isListening)} />
+          </div>
+          <div ref={refVersion} className="chat-gpt__version">
+            <span>ChatGPT Jan 9 Version.</span>
+            <span>
+              Free Research Preview. Our goal is to make AI systems more natural and safe to interact with. Your feedback will help us improve.
+            </span>
+          </div>
         </div>
-        <FontAwesomeIcon icon={faMicrophone} ref={refMicrophone} className="microphone none" onClick={() => setIsListening(!isListening)} />
-        <div ref={refVersion} className="chat-gpt__version">
-          <span>ChatGPT Jan 9 Version.</span>
-          <span>
-            Free Research Preview. Our goal is to make AI systems more natural and safe to interact with. Your feedback will help us improve.
-          </span>
-        </div>
+        <div className="overlay hidden" ref={refOverlay}></div>
       </div>
-      <div className="overlay hidden" ref={refOverlay}></div>
     </div>
   );
 }
