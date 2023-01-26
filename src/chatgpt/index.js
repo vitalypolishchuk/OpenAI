@@ -3,10 +3,10 @@ import { useState, useEffect, useRef } from "react";
 import { createSpeechlySpeechRecognition } from "@speechly/speech-recognition-polyfill";
 import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
 import { v4 as uniqueId } from "uuid";
+import userImg from "../additional/user.webp";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMicrophone, faBars, faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
 import barsSvg from "../additional/bars.svg";
-import paperPlane from "../additional/paper-plane.png";
 
 // If the quota is exceeded, set up new appId from Speechly API.
 const appId = "b2638ffb-3015-4690-8ead-b919df798c4b";
@@ -26,6 +26,9 @@ export default function ChatGPT() {
   const refSideMenu = useRef();
   const refOverlay = useRef();
   const refVersion = useRef();
+  const refTextBox = useRef();
+  const refChatGpt = useRef();
+  const refHeader = useRef();
 
   // react-speech-recognition API with Speechly
   let { transcript, resetTranscript, listening, browserSupportsSpeechRecognition, isMicrophoneAvailable } = useSpeechRecognition();
@@ -41,6 +44,11 @@ export default function ChatGPT() {
   }, [chatTranscript]);
 
   useEffect(() => {
+    const headerHeight = parseFloat(getComputedStyle(refHeader.current).getPropertyValue("height"));
+    const chatGptHeight = parseFloat(getComputedStyle(refChatGpt.current).getPropertyValue("height"));
+
+    // calc the height for .gpt-textbox. 48px includes padding from .gpt-textbox
+    refTextBox.current.style.height = window.innerHeight - headerHeight - chatGptHeight - 48 + "px";
     // containerHeight is the height of textarea, 60 is the additional height of the chat-gpt text
     setMainContainerHeight(window.innerHeight - containerHeight - 60);
   }, [containerHeight, innerHeight]);
@@ -142,7 +150,7 @@ export default function ChatGPT() {
         </div>
       </aside>
       <div className="gpt-main-container" style={{ height: mainContainerHeight + "px" }}>
-        <header className="gpt-header">
+        <header ref={refHeader} className="gpt-header">
           <header className="gpt-header__center">
             <button onClick={handleSideMenu} className="gpt-header__menu gpt-btn">
               <FontAwesomeIcon icon={faBars} />
@@ -153,7 +161,23 @@ export default function ChatGPT() {
             </button>
           </header>
         </header>
-        <div className="chat-gpt" style={{ height: 60 + containerHeight + "px" }}>
+        <section ref={refTextBox} className="gpt-textbox">
+          <div className="gpt-textbox__avatar">
+            <img src={userImg}></img>
+          </div>
+          <div className="gpt-textbox__message">
+            message here message heremessage heremessage heremessage heremessage heremessage heremessage here message here message here message here
+            message here message here message here message here message here message here ge here message here ge here message here ge here message
+            here message here message heremessage heremessage heremessage heremessage heremessage heremessage here message here message here message
+            here message here message here message here message here message here message here ge here message here ge here message here ge here
+            message here message here message heremessage heremessage heremessage heremessage heremessage heremessage here message here message here
+            message here message here message here message here message here message here message here ge here message here ge here message here ge
+            here message here message here message heremessage heremessage heremessage heremessage heremessage heremessage here message here message
+            77777777777777777 877777777777777 88887777777777777777 888888888888888 message here message 77777777777777777 877777777777777
+            88887777777777777777 888888888888888 message here message 77777777777777777 877777777777777 88887777777777777777 888888888888888 last
+          </div>
+        </section>
+        <section ref={refChatGpt} className="chat-gpt" style={{ height: 60 + containerHeight + "px" }}>
           <div className="chat-gpt__result" style={{ height: containerHeight + "px" }}>
             <img src={barsSvg} ref={barsRef} className="bars none" />
             <textarea
@@ -168,9 +192,9 @@ export default function ChatGPT() {
             <svg
               stroke="currentColor"
               fill="currentColor"
-              stroke-width="0"
+              strokeWidth="0"
               viewBox="0 0 20 20"
-              class="chat-gpt__send"
+              className="chat-gpt__send"
               height="1em"
               width="1em"
               xmlns="http://www.w3.org/2000/svg"
@@ -185,7 +209,7 @@ export default function ChatGPT() {
               Free Research Preview. Our goal is to make AI systems more natural and safe to interact with. Your feedback will help us improve.
             </span>
           </div>
-        </div>
+        </section>
         <div className="overlay hidden" ref={refOverlay}></div>
       </div>
     </div>
