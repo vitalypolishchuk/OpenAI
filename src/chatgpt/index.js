@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMicrophone, faBars, faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
 import barsSvg from "../additional/bars.svg";
 
+// If the quota is exceeded, set up new appId from Speechly API.
 const appId = "b2638ffb-3015-4690-8ead-b919df798c4b";
 const SpeechlySpeechRecognition = createSpeechlySpeechRecognition(appId);
 SpeechRecognition.applyPolyfill(SpeechlySpeechRecognition);
@@ -25,6 +26,7 @@ export default function ChatGPT() {
   const refOverlay = useRef();
   const refVersion = useRef();
 
+  // react-speech-recognition API with Speechly
   let { transcript, resetTranscript, listening, browserSupportsSpeechRecognition, isMicrophoneAvailable } = useSpeechRecognition();
 
   useEffect(() => {
