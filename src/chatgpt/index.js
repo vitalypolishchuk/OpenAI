@@ -15,6 +15,7 @@ export default function ChatGPT() {
   const [mainContainerHeight, setMainContainerHeight] = useState(100);
   const [isListening, setIsListening] = useState(false);
   const [text, setText] = useState("");
+  const [chatTranscript, setchatTranscript] = useState("");
   const [containerHeight, setContainerHeight] = useState(39);
   const [innerHeight, setInnerHeight] = useState(window.innerHeight);
   const barsRef = useRef();
@@ -22,20 +23,23 @@ export default function ChatGPT() {
   const refTextArea = useRef();
   const refSideMenu = useRef();
   const refOverlay = useRef();
-  const [changedTranscript, setChangedTranscript] = useState("");
+  const refVersion = useRef();
 
   let { transcript, resetTranscript, listening, browserSupportsSpeechRecognition, isMicrophoneAvailable } = useSpeechRecognition();
 
   useEffect(() => {
-    setText(changedTranscript + +" " + transcript);
+    // Chat transcript is the text which was hand-written by user, whereas Transcript is the recorded audio by user.
+    setText(chatTranscript + " " + transcript);
   }, [transcript]);
 
   useEffect(() => {
+    // if chatTranscript is changed (user wrote something in chat), we set audio transcript to = '';
     resetTranscript();
-  }, [changedTranscript]);
+  }, [chatTranscript]);
 
   useEffect(() => {
-    setMainContainerHeight(window.innerHeight - containerHeight - 40);
+    // containerHeight is the height of textarea, 60 is the additional height of the chat-gpt text
+    setMainContainerHeight(window.innerHeight - containerHeight - 60);
   }, [containerHeight, innerHeight]);
 
   useEffect(() => {
@@ -46,6 +50,7 @@ export default function ChatGPT() {
     window.addEventListener("resize", onResize);
 
     if (browserSupportsSpeechRecognition) {
+      // check if speech is not supported by the browser
       refMicrophone.current.classList.remove("none");
     }
     if (!isMicrophoneAvailable) {
@@ -146,12 +151,12 @@ export default function ChatGPT() {
             value={text}
             onChange={(e) => {
               setText(e.target.value);
-              setChangedTranscript(e.target.value);
+              setchatTranscript(e.target.value);
             }}
           />
         </div>
         <FontAwesomeIcon icon={faMicrophone} ref={refMicrophone} className="microphone none" onClick={() => setIsListening(!isListening)} />
-        <div className="chat-gpt__version">
+        <div ref={refVersion} className="chat-gpt__version">
           <span>ChatGPT Jan 9 Version.</span>
           <span>
             Free Research Preview. Our goal is to make AI systems more natural and safe to interact with. Your feedback will help us improve.

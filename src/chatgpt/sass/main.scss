@@ -92,6 +92,7 @@
 }
 
 .chat-gpt {
+  overflow-y: scroll;
   background-color: $clr-secondary;
   border-top: 1px solid $clr-light;
   height: 90px;
