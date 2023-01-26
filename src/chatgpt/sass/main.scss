@@ -92,7 +92,7 @@
   top: 0;
   height: 100vh;
   z-index: 999;
-  background-color: rgb(32, 33, 35);
+  background-color: $clr-dark;
   transition: all 0.6s;
 
   @include respond(md) {
@@ -100,6 +100,35 @@
     top: 0;
     left: 0;
     transition: none;
+  }
+
+  &__relative {
+    height: 100%;
+    position: relative;
+  }
+
+  &__new-chat {
+    background-color: $clr-dark;
+    border: 1px solid $clr-primary;
+    width: 95%;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 0.55rem;
+    cursor: pointer;
+    height: 45px;
+    border-radius: 8px;
+    color: #ffffff;
+    text-align: left;
+    font-size: 15px;
+
+    &:hover {
+      background-color: rgba($clr-primary, 0.2);
+    }
+
+    span {
+      padding-left: 1rem;
+    }
   }
 
   &__close {
@@ -159,6 +188,24 @@
   .microphone {
     cursor: pointer;
     right: 0;
+  }
+
+  &__send {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 17px;
+    height: 17px;
+    color: $clr-light-2;
+    rotate: 90deg;
+    cursor: pointer;
+    border-radius: 7px;
+
+    &:hover {
+      background-color: $clr-dark;
+      padding: 0.21rem;
+    }
   }
 
   &__result {

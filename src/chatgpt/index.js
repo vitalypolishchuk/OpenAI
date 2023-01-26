@@ -6,6 +6,7 @@ import { v4 as uniqueId } from "uuid";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMicrophone, faBars, faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
 import barsSvg from "../additional/bars.svg";
+import paperPlane from "../additional/paper-plane.png";
 
 // If the quota is exceeded, set up new appId from Speechly API.
 const appId = "b2638ffb-3015-4690-8ead-b919df798c4b";
@@ -128,10 +129,17 @@ export default function ChatGPT() {
   return (
     <div className="gpt">
       <aside className="gpt-sidemenu" ref={refSideMenu}>
-        menu
-        <button onClick={handleCloseSideMenu} className="gpt-sidemenu__close gpt-btn">
-          <FontAwesomeIcon icon={faXmark} />
-        </button>
+        <div className="gpt-sidemenu__relative">
+          <button onClick={handleCloseSideMenu} className="gpt-sidemenu__close gpt-btn">
+            <FontAwesomeIcon icon={faXmark} />
+          </button>
+          <button className="gpt-sidemenu__new-chat">
+            <span>
+              <FontAwesomeIcon icon={faPlus} />
+            </span>
+            <span>New chat</span>
+          </button>
+        </div>
       </aside>
       <div className="gpt-main-container" style={{ height: mainContainerHeight + "px" }}>
         <header className="gpt-header">
@@ -157,6 +165,18 @@ export default function ChatGPT() {
                 setchatTranscript(e.target.value);
               }}
             />
+            <svg
+              stroke="currentColor"
+              fill="currentColor"
+              stroke-width="0"
+              viewBox="0 0 20 20"
+              class="chat-gpt__send"
+              height="1em"
+              width="1em"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path>
+            </svg>
             <FontAwesomeIcon icon={faMicrophone} ref={refMicrophone} className="microphone none" onClick={() => setIsListening(!isListening)} />
           </div>
           <div ref={refVersion} className="chat-gpt__version">
