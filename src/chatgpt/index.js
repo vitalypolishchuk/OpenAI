@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { createSpeechlySpeechRecognition } from "@speechly/speech-recognition-polyfill";
 import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
 import { v4 as uniqueId } from "uuid";
+import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMicrophone, faBars, faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
 import barsSvg from "../additional/bars.svg";
@@ -46,7 +47,23 @@ export default function ChatGPT() {
   }, [chatTranscript]);
 
   useEffect(() => {
-    console.log(chatLog);
+    const url = "https://openai-express.netlify.app/.netlify/functions/api";
+    const lastLog = chatLog[chatLog.length - 1];
+    if (lastLog.user === "gpt") return;
+    const message = lastLog.message;
+    const body = {
+      message,
+    };
+    const headers = {
+      "Content-Type": "application/json",
+    };
+    const fetchData = async () => {
+      const response = await axios.post(url, body, headers);
+      setChatLog([...chatLog, { user: "gpt", message: response.data.message }]);
+      //console.log(response.data.message);
+      return response.data;
+    };
+    fetchData();
   }, [chatLog]);
 
   useEffect(() => {
