@@ -3,10 +3,11 @@ import { useState, useEffect, useRef } from "react";
 import { createSpeechlySpeechRecognition } from "@speechly/speech-recognition-polyfill";
 import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
 import { v4 as uniqueId } from "uuid";
-import userImg from "../additional/user.webp";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMicrophone, faBars, faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
 import barsSvg from "../additional/bars.svg";
+import { gptIconPath } from "../additional/gpt-icon-path.js";
+import ChatMessage from "./ChatMessage";
 
 // If the quota is exceeded, set up new appId from Speechly API.
 const appId = "b2638ffb-3015-4690-8ead-b919df798c4b";
@@ -17,6 +18,7 @@ export default function ChatGPT() {
   const [mainContainerHeight, setMainContainerHeight] = useState(100);
   const [isListening, setIsListening] = useState(false);
   const [text, setText] = useState("");
+  const [chatLog, setChatLog] = useState([{ user: "gpt", message: "how can I help you today?" }]);
   const [chatTranscript, setchatTranscript] = useState("");
   const [containerHeight, setContainerHeight] = useState(39);
   const [innerHeight, setInnerHeight] = useState(window.innerHeight);
@@ -44,11 +46,15 @@ export default function ChatGPT() {
   }, [chatTranscript]);
 
   useEffect(() => {
+    console.log(chatLog);
+  }, [chatLog]);
+
+  useEffect(() => {
     const headerHeight = parseFloat(getComputedStyle(refHeader.current).getPropertyValue("height"));
     const chatGptHeight = parseFloat(getComputedStyle(refChatGpt.current).getPropertyValue("height"));
 
-    // calc the height for .gpt-textbox. 48px includes padding from .gpt-textbox
-    refTextBox.current.style.height = window.innerHeight - headerHeight - chatGptHeight - 48 + "px";
+    // calc the height for .gpt-textbox
+    refTextBox.current.style.height = window.innerHeight - headerHeight - chatGptHeight - 2.5 + "px";
     // containerHeight is the height of textarea, 60 is the additional height of the chat-gpt text
     setMainContainerHeight(window.innerHeight - containerHeight - 60);
   }, [containerHeight, innerHeight]);
@@ -134,6 +140,14 @@ export default function ChatGPT() {
     refOverlay.current.classList.remove("visible-overlay");
   }
 
+  function handleSubmit(e) {
+    e.preventDefault();
+    if (text === "") return;
+    setChatLog([...chatLog, { user: "me", message: text }]);
+    setText("");
+    setchatTranscript("");
+  }
+
   return (
     <div className="gpt">
       <aside className="gpt-sidemenu" ref={refSideMenu}>
@@ -162,24 +176,15 @@ export default function ChatGPT() {
           </header>
         </header>
         <section ref={refTextBox} className="gpt-textbox">
-          <div className="gpt-textbox__avatar">
-            <img src={userImg}></img>
-          </div>
-          <div className="gpt-textbox__message">
-            message here message heremessage heremessage heremessage heremessage heremessage heremessage here message here message here message here
-            message here message here message here message here message here message here ge here message here ge here message here ge here message
-            here message here message heremessage heremessage heremessage heremessage heremessage heremessage here message here message here message
-            here message here message here message here message here message here message here ge here message here ge here message here ge here
-            message here message here message heremessage heremessage heremessage heremessage heremessage heremessage here message here message here
-            message here message here message here message here message here message here message here ge here message here ge here message here ge
-            here message here message here message heremessage heremessage heremessage heremessage heremessage heremessage here message here message
-            77777777777777777 877777777777777 88887777777777777777 888888888888888 message here message 77777777777777777 877777777777777
-            88887777777777777777 888888888888888 message here message 77777777777777777 877777777777777 88887777777777777777 888888888888888 last
-          </div>
+          {chatLog.map((message) => (
+            <ChatMessage key={uniqueId()} message={message} />
+          ))}
         </section>
         <section ref={refChatGpt} className="chat-gpt" style={{ height: 60 + containerHeight + "px" }}>
           <div className="chat-gpt__result" style={{ height: containerHeight + "px" }}>
-            <img src={barsSvg} ref={barsRef} className="bars none" />
+            <button ref={barsRef} className="bars none">
+              <img src={barsSvg} />
+            </button>
             <textarea
               ref={refTextArea}
               rows={1}
@@ -189,19 +194,22 @@ export default function ChatGPT() {
                 setchatTranscript(e.target.value);
               }}
             />
-            <svg
-              stroke="currentColor"
-              fill="currentColor"
-              strokeWidth="0"
-              viewBox="0 0 20 20"
-              className="chat-gpt__send"
-              height="1em"
-              width="1em"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path>
-            </svg>
-            <FontAwesomeIcon icon={faMicrophone} ref={refMicrophone} className="microphone none" onClick={() => setIsListening(!isListening)} />
+            <button className="chat-gpt__send" onClick={handleSubmit}>
+              <svg
+                stroke="currentColor"
+                fill="currentColor"
+                strokeWidth="0"
+                viewBox="0 0 20 20"
+                height="1em"
+                width="1em"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path>
+              </svg>
+            </button>
+            <button ref={refMicrophone} className="microphone none" onClick={() => setIsListening(!isListening)}>
+              <FontAwesomeIcon icon={faMicrophone} />
+            </button>
           </div>
           <div ref={refVersion} className="chat-gpt__version">
             <span>ChatGPT Jan 9 Version.</span>
