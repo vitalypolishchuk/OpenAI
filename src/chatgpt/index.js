@@ -9,6 +9,7 @@ import { faMicrophone, faBars, faPlus, faXmark } from "@fortawesome/free-solid-s
 import barsSvg from "../additional/bars.svg";
 import { gptIconPath } from "../additional/gpt-icon-path.js";
 import ChatMessage from "./ChatMessage";
+import apiCall from "./api";
 
 // If the quota is exceeded, set up new appId from Speechly API.
 const appId = "b2638ffb-3015-4690-8ead-b919df798c4b";
@@ -47,21 +48,14 @@ export default function ChatGPT() {
   }, [chatTranscript]);
 
   useEffect(() => {
-    const url = "https://openai-express.netlify.app/.netlify/functions/api";
     const lastLog = chatLog[chatLog.length - 1];
     if (lastLog.user === "gpt") return;
     const message = lastLog.message;
-    const body = {
-      message,
-    };
-    const headers = {
-      "Content-Type": "application/json",
-    };
+
     const fetchData = async () => {
-      const response = await axios.post(url, body, headers);
-      setChatLog([...chatLog, { user: "gpt", message: response.data.message }]);
+      const response = apiCall(message);
+      setChatLog([...chatLog, { user: "gpt", message: response.message }]);
       //console.log(response.data.message);
-      return response.data;
     };
     fetchData();
   }, [chatLog]);
