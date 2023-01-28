@@ -1,4 +1,6 @@
-const API_KEY = "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";
+import axios from "axios";
+
+const API_KEY = "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";
 
 const url = "https://api.openai.com/v1/completions";
 

@@ -48,12 +48,14 @@ export default function ChatGPT() {
   }, [chatTranscript]);
 
   useEffect(() => {
+    refTextBox.current.scrollTop = refTextBox.current.scrollHeight;
     const lastLog = chatLog[chatLog.length - 1];
     if (lastLog.user === "gpt") return;
     const message = lastLog.message;
 
     const fetchData = async () => {
-      const response = apiCall(message);
+      const response = await apiCall(message);
+      console.log(response);
       setChatLog([...chatLog, { user: "gpt", message: response.message }]);
       //console.log(response.data.message);
     };
@@ -180,7 +182,7 @@ export default function ChatGPT() {
             <button onClick={handleSideMenu} className="gpt-header__menu gpt-btn">
               <FontAwesomeIcon icon={faBars} />
             </button>
-            <h5 className="gpt-header__text">useEffect and window.innerHeight</h5>
+            <h5 className="gpt-header__text">New Chat</h5>
             <button className="gpt-header__plus gpt-btn">
               <FontAwesomeIcon icon={faPlus} />
             </button>
