@@ -12,7 +12,7 @@ import ChatMessage from "./ChatMessage";
 import apiCall from "./api";
 
 // If the quota is exceeded, set up new appId from Speechly API.
-const appId = "b2638ffb-3015-4690-8ead-b919df798c4b";
+const appId = process.env.REACT_APP_SPEECHLY_API_KEY;
 const SpeechlySpeechRecognition = createSpeechlySpeechRecognition(appId);
 SpeechRecognition.applyPolyfill(SpeechlySpeechRecognition);
 
