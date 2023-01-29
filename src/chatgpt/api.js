@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_KEY = "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";
+const API_KEY = "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";
 
 const url = "https://api.openai.com/v1/completions";
 
@@ -8,7 +8,7 @@ const data = {
   model: "text-davinci-003",
   prompt: "Say this is a test",
   temperature: 0.5,
-  max_tokens: 150,
+  max_tokens: 7,
 };
 
 const headers = {
