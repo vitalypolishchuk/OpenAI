@@ -8,7 +8,7 @@ const data = {
   model: "text-davinci-003",
   prompt: "Say this is a test",
   temperature: 0.5,
-  max_tokens: 7,
+  max_tokens: 150,
 };
 
 const headers = {
