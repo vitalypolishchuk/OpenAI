@@ -13,7 +13,6 @@ import apiCall from "./api";
 
 // If the quota is exceeded, set up new appId from Speechly API.
 const appId = process.env.REACT_APP_SPEECHLY_API_KEY;
-console.log(appId);
 const SpeechlySpeechRecognition = createSpeechlySpeechRecognition(appId);
 SpeechRecognition.applyPolyfill(SpeechlySpeechRecognition);
 
