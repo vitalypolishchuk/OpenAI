@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_KEY = "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";
+const API_KEY = process.env.REACT_APP_OPENAI_API_KEY;
 
 const url = "https://api.openai.com/v1/completions";
 

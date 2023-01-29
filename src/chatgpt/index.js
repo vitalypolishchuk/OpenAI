@@ -158,7 +158,8 @@ export default function ChatGPT() {
     if (text === "") return;
     setChatLog([...chatLog, { user: "me", message: text }]);
     setText("");
-    setchatTranscript("");
+    // setchatTranscript("");
+    resetTranscript();
   }
 
   return (
