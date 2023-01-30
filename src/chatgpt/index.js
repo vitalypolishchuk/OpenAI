@@ -63,8 +63,6 @@ export default function ChatGPT() {
       return prev + "\n" + cur.message;
     }, chatLog[1].message);
 
-    console.log(messages);
-
     const fetchData = async () => {
       const response = await apiCall(messages, model);
       setChatLog([...chatLog, { user: "gpt", message: response.message }]);
@@ -172,7 +170,6 @@ export default function ChatGPT() {
 
   function handleCloseSideMenu(e) {
     if (refOpenMenu.current.contains(e.target) || (refSideMenu.current.contains(e.target) && !refCloseSideMenu.current.contains(e.target))) return;
-    console.log("here");
     refSideMenu.current.style.left = "-100%";
     refOverlay.current.classList.add("hidden");
     refOverlay.current.classList.remove("visible-overlay");
