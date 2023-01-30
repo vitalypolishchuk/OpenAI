@@ -17,6 +17,7 @@ const SpeechlySpeechRecognition = createSpeechlySpeechRecognition(appId);
 SpeechRecognition.applyPolyfill(SpeechlySpeechRecognition);
 
 export default function ChatGPT() {
+  const [model, setModel] = useState("text-davinci-003");
   const [mainContainerHeight, setMainContainerHeight] = useState(100);
   const [isListening, setIsListening] = useState(false);
   const [text, setText] = useState("");
@@ -35,6 +36,8 @@ export default function ChatGPT() {
   const refChatGpt = useRef();
   const refHeader = useRef();
   const refAvailable = useRef();
+  const refOpenMenu = useRef();
+  const refCloseSideMenu = useRef();
 
   // react-speech-recognition API with Speechly
   let { transcript, resetTranscript, listening, browserSupportsSpeechRecognition, isMicrophoneAvailable } = useSpeechRecognition();
@@ -51,13 +54,19 @@ export default function ChatGPT() {
 
   useEffect(() => {
     refTextBox.current.scrollTop = refTextBox.current.scrollHeight;
-    const lastLog = chatLog[chatLog.length - 1];
-    if (lastLog.user === "gpt") return;
-    const message = lastLog.message;
+    if (chatLog[chatLog.length - 1].user === "gpt") return;
+
+    const messages = chatLog.reduce((prev, cur, id) => {
+      if (id === 0) return "";
+      if (id === 1) return prev + cur.message;
+
+      return prev + "\n" + cur.message;
+    }, chatLog[1].message);
+
+    console.log(messages);
 
     const fetchData = async () => {
-      const response = await apiCall(message);
-      console.log(response);
+      const response = await apiCall(messages, model);
       setChatLog([...chatLog, { user: "gpt", message: response.message }]);
       //console.log(response.data.message);
     };
@@ -80,6 +89,7 @@ export default function ChatGPT() {
 
   useEffect(() => {
     window.addEventListener("resize", onResize);
+    window.addEventListener("click", handleCloseSideMenu);
 
     if (browserSupportsSpeechRecognition) {
       // check if speech is not supported by the browser
@@ -87,6 +97,7 @@ export default function ChatGPT() {
     }
 
     return () => {
+      window.addEventListener("click", handleCloseSideMenu);
       window.removeEventListener("resize", onResize);
     };
   }, []);
@@ -97,11 +108,14 @@ export default function ChatGPT() {
 
   async function handleListen() {
     if (isListening) {
+      // check permission for microphone
       const permissionStatus = await navigator.permissions.query({ name: "microphone" });
       if (permissionStatus.state !== "granted") {
         try {
-          const microphonePermission = await navigator.mediaDevices.getUserMedia({ audio: true });
+          // ask permission for microphone
+          await navigator.mediaDevices.getUserMedia({ audio: true });
         } catch (err) {
+          // permission is denied. Show pop-up
           refAvailable.current.classList.remove("hidden");
           refAvailable.current.classList.add("transition");
         }
@@ -109,10 +123,12 @@ export default function ChatGPT() {
         return;
       }
 
+      // permission for microphone is granted
       SpeechRecognition.startListening({ continuous: true });
       refMicrophone.current.classList.add("microphone-active");
       barsRef.current.classList.remove("none");
     } else {
+      // Stop listening
       SpeechRecognition.stopListening();
       refMicrophone.current.classList.remove("microphone-active");
       barsRef.current.classList.add("none");
@@ -154,13 +170,15 @@ export default function ChatGPT() {
     refOverlay.current.classList.add("visible-overlay");
   }
 
-  function handleCloseSideMenu() {
+  function handleCloseSideMenu(e) {
+    if (refOpenMenu.current.contains(e.target) || (refSideMenu.current.contains(e.target) && !refCloseSideMenu.current.contains(e.target))) return;
+    console.log("here");
     refSideMenu.current.style.left = "-100%";
     refOverlay.current.classList.add("hidden");
     refOverlay.current.classList.remove("visible-overlay");
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     setIsListening(false);
     if (text === "") return;
@@ -169,25 +187,34 @@ export default function ChatGPT() {
     setText("");
   }
 
+  function newChat() {
+    setChatTranscript("");
+    setText("");
+    setChatLog([{ user: "gpt", message: "how can I help you today?" }]);
+  }
+
   return (
     <div className="gpt">
       <aside className="gpt-sidemenu" ref={refSideMenu}>
-        <div className="gpt-sidemenu__relative">
-          <button onClick={handleCloseSideMenu} className="gpt-sidemenu__close gpt-btn">
-            <FontAwesomeIcon icon={faXmark} />
-          </button>
-          <button className="gpt-sidemenu__new-chat">
-            <span>
-              <FontAwesomeIcon icon={faPlus} />
-            </span>
-            <span>New chat</span>
-          </button>
-        </div>
+        <button ref={refCloseSideMenu} className="gpt-sidemenu__close gpt-btn">
+          <FontAwesomeIcon icon={faXmark} />
+        </button>
+        <button className="gpt-sidemenu__new-chat" onClick={newChat}>
+          <span>
+            <FontAwesomeIcon icon={faPlus} />
+          </span>
+          <span>New chat</span>
+        </button>
+        <div className="gpt-sidemenu__chats"></div>
+        <select onChange={(e) => setModel(e.target.value)} className="gpt-sidemenu__engine" name="model" id="model">
+          <option value="text-davinci-003">text-davinci-003</option>
+          <option value="code-davinci-002">code-davinci-002</option>
+        </select>
       </aside>
       <div className="gpt-main-container" style={{ height: mainContainerHeight + "px" }}>
         <header ref={refHeader} className="gpt-header">
           <header className="gpt-header__center">
-            <button onClick={handleSideMenu} className="gpt-header__menu gpt-btn">
+            <button ref={refOpenMenu} onClick={handleSideMenu} className="gpt-header__menu gpt-btn">
               <FontAwesomeIcon icon={faBars} />
             </button>
             <h5 className="gpt-header__text">New Chat</h5>
