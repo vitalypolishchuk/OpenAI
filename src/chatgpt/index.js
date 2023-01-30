@@ -21,9 +21,10 @@ export default function ChatGPT() {
   const [isListening, setIsListening] = useState(false);
   const [text, setText] = useState("");
   const [chatLog, setChatLog] = useState([{ user: "gpt", message: "how can I help you today?" }]);
-  const [chatTranscript, setchatTranscript] = useState("");
+  const [chatTranscript, setChatTranscript] = useState("");
   const [containerHeight, setContainerHeight] = useState(39);
   const [innerHeight, setInnerHeight] = useState(window.innerHeight);
+  const [isMicrophoneTurnd, seisMicrophoneTurnd] = useState();
   const barsRef = useRef();
   const refMicrophone = useRef();
   const refTextArea = useRef();
@@ -33,6 +34,7 @@ export default function ChatGPT() {
   const refTextBox = useRef();
   const refChatGpt = useRef();
   const refHeader = useRef();
+  const refAvailable = useRef();
 
   // react-speech-recognition API with Speechly
   let { transcript, resetTranscript, listening, browserSupportsSpeechRecognition, isMicrophoneAvailable } = useSpeechRecognition();
@@ -83,9 +85,6 @@ export default function ChatGPT() {
       // check if speech is not supported by the browser
       refMicrophone.current.classList.remove("none");
     }
-    if (!isMicrophoneAvailable) {
-      // Render some fallback content
-    }
 
     return () => {
       window.removeEventListener("resize", onResize);
@@ -96,15 +95,23 @@ export default function ChatGPT() {
     handleText();
   }, [text]);
 
-  function handleListen() {
+  async function handleListen() {
     if (isListening) {
+      const permissionStatus = await navigator.permissions.query({ name: "microphone" });
+      if (permissionStatus.state !== "granted") {
+        try {
+          const microphonePermission = await navigator.mediaDevices.getUserMedia({ audio: true });
+        } catch (err) {
+          refAvailable.current.classList.remove("hidden");
+          refAvailable.current.classList.add("transition");
+        }
+
+        return;
+      }
+
       SpeechRecognition.startListening({ continuous: true });
       refMicrophone.current.classList.add("microphone-active");
       barsRef.current.classList.remove("none");
-
-      if (!browserSupportsSpeechRecognition) {
-        return <span>Browser doesn't support speech recognition.</span>;
-      }
     } else {
       SpeechRecognition.stopListening();
       refMicrophone.current.classList.remove("microphone-active");
@@ -155,11 +162,11 @@ export default function ChatGPT() {
 
   function handleSubmit(e) {
     e.preventDefault();
+    setIsListening(false);
     if (text === "") return;
     setChatLog([...chatLog, { user: "me", message: text }]);
+    setChatTranscript("");
     setText("");
-    // setchatTranscript("");
-    resetTranscript();
   }
 
   return (
@@ -190,6 +197,9 @@ export default function ChatGPT() {
           </header>
         </header>
         <section ref={refTextBox} className="gpt-textbox">
+          <div ref={refAvailable} className="gpt-textbox__available hidden">
+            Please grant the microphone permission!
+          </div>
           {chatLog.map((message) => (
             <ChatMessage key={uniqueId()} message={message} />
           ))}
@@ -205,7 +215,7 @@ export default function ChatGPT() {
               value={text}
               onChange={(e) => {
                 setText(e.target.value);
-                setchatTranscript(e.target.value);
+                setChatTranscript(e.target.value);
               }}
             />
             <button className="chat-gpt__send" onClick={handleSubmit}>
