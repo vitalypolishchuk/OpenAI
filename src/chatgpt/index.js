@@ -5,7 +5,7 @@ import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognitio
 import { v4 as uniqueId } from "uuid";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMicrophone, faBars, faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faMicrophone, faBars, faPlus, faXmark, faComment, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import barsSvg from "../additional/bars.svg";
 import { gptIconPath } from "../additional/gpt-icon-path.js";
 import ChatMessage from "./ChatMessage";
@@ -21,7 +21,33 @@ export default function ChatGPT() {
   const [mainContainerHeight, setMainContainerHeight] = useState(100);
   const [isListening, setIsListening] = useState(false);
   const [text, setText] = useState("");
-  const [chatLog, setChatLog] = useState([{ user: "gpt", message: "how can I help you today?" }]);
+  const [chats, setChats] = useState([
+    {
+      chatLogId: "12",
+      title: "GET Request Generation Example",
+      data: [
+        { user: "gpt", message: "how can I help you? 12" },
+        { user: "me", message: "Say this is a test 12" },
+      ],
+    },
+    {
+      chatLogId: "13",
+      title: "V | Coding",
+      data: [
+        { user: "gpt", message: "how can I help you? 13" },
+        { user: "me", message: "Say this is a test 13" },
+      ],
+    },
+    {
+      chatLogId: "14",
+      title: "Read and write me a text to describe",
+      data: [
+        { user: "gpt", message: "how can I help you? 13" },
+        { user: "me", message: "Say this is a test 13" },
+      ],
+    },
+  ]); // all chats
+  const [chatLog, setChatLog] = useState({ chatLogId: "", title: "New Chat", data: [{ user: "gpt", message: "how can I help you today?" }] }); // current chat
   const [chatTranscript, setChatTranscript] = useState("");
   const [containerHeight, setContainerHeight] = useState(39);
   const [innerHeight, setInnerHeight] = useState(window.innerHeight);
@@ -38,6 +64,7 @@ export default function ChatGPT() {
   const refAvailable = useRef();
   const refOpenMenu = useRef();
   const refCloseSideMenu = useRef();
+  const refMenuChatsContainer = useRef();
 
   // react-speech-recognition API with Speechly
   let { transcript, resetTranscript, listening, browserSupportsSpeechRecognition, isMicrophoneAvailable } = useSpeechRecognition();
@@ -53,19 +80,44 @@ export default function ChatGPT() {
   }, [chatTranscript]);
 
   useEffect(() => {
-    refTextBox.current.scrollTop = refTextBox.current.scrollHeight;
-    if (chatLog[chatLog.length - 1].user === "gpt") return;
+    console.log(chats);
+  }, [chats]);
 
-    const messages = chatLog.reduce((prev, cur, id) => {
+  useEffect(() => {
+    console.log(chatLog);
+    // user wrote first message && there is no chatLogId
+    if (chatLog.data.length === 2 && chatLog.chatLogId === "") {
+      // we set chatLogId
+      const chatLogId = uniqueId();
+      setChatLog({ chatLogId: chatLogId, title: chatLog.title, data: [...chatLog.data] });
+    }
+
+    // if the chatLog has chatLogId
+    if (chatLog.chatLogId !== "") {
+      // we try to find current chatLog in the chats
+      const foundLogIndex = chats.findIndex((chat) => chat.chatLogId === chatLog.chatLogId);
+      if (foundLogIndex !== -1) {
+        // if we found current chatLog in the chats, we replace the old chatLog, with the new one
+        setChats([...chats.slice(0, foundLogIndex), chatLog, ...chats.slice(foundLogIndex + 1)]);
+      } else {
+        // if we did not find current chatLog in the chats, we add it to the chats
+        setChats([...chats, chatLog]);
+      }
+    }
+
+    refTextBox.current.scrollTop = refTextBox.current.scrollHeight;
+    if (chatLog.data[chatLog.data.length - 1].user === "gpt") return;
+
+    const messages = chatLog.data.reduce((prev, cur, id) => {
       if (id === 0) return "";
       if (id === 1) return prev + cur.message;
 
       return prev + "\n" + cur.message;
-    }, chatLog[1].message);
+    }, chatLog.data[1].message);
 
     const fetchData = async () => {
       const response = await apiCall(messages, model);
-      setChatLog([...chatLog, { user: "gpt", message: response.message }]);
+      setChatLog({ chatLogId: chatLog.chatLogId, title: chatLog.title, data: [...chatLog.data, { user: "gpt", message: response.message }] });
       //console.log(response.data.message);
     };
     fetchData();
@@ -86,6 +138,7 @@ export default function ChatGPT() {
   }, [isListening]);
 
   useEffect(() => {
+    textToSpeech();
     window.addEventListener("resize", onResize);
     window.addEventListener("click", handleCloseSideMenu);
 
@@ -103,6 +156,23 @@ export default function ChatGPT() {
   useEffect(() => {
     handleText();
   }, [text]);
+
+  async function textToSpeech() {
+    const url = "https://play.ht/api/v1/convert";
+    const body = {
+      voice: "en-AU-Standard-B",
+      content: ["Hello, my name is Jarvis. How can I help you?"],
+    };
+
+    // const headers = {
+    //   "Content-Type": "application/json",
+    //   Authorization: "6b74a99a6d604b17af99c7d92427bc43",
+    //   "X-User-ID": "MZSUwThiXrfFCfUDmxBRLZd0C702",
+    // };
+    // const response = await axios.post(url, body, { headers: headers });
+    // console.log(response);
+    // const getResponse = await axios.get("https://play.ht/api/v1/articleStatus");
+  }
 
   async function handleListen() {
     if (isListening) {
@@ -179,7 +249,7 @@ export default function ChatGPT() {
     e.preventDefault();
     setIsListening(false);
     if (text === "") return;
-    setChatLog([...chatLog, { user: "me", message: text }]);
+    setChatLog({ chatLogId: chatLog.chatLogId, title: chatLog.title, data: [...chatLog.data, { user: "me", message: text }] });
     setChatTranscript("");
     setText("");
   }
@@ -187,7 +257,56 @@ export default function ChatGPT() {
   function newChat() {
     setChatTranscript("");
     setText("");
-    setChatLog([{ user: "gpt", message: "how can I help you today?" }]);
+    setChatLog({ chatLogId: "", title: "New Chat", data: [{ user: "gpt", message: "how can I help you today?" }] });
+  }
+
+  function renderMenuChats() {
+    return chats.map((chat) => {
+      return (
+        <button
+          onClick={() => {
+            handleChat(chat.chatLogId);
+          }}
+          data-chatlogid={chat.chatLogId}
+          key={uniqueId()}
+          className="gpt-sidemenu__chat-button"
+        >
+          <span>
+            <FontAwesomeIcon icon={faComment} />
+          </span>
+          <span>{chat.title}</span>
+          <span
+            onClick={(e) => {
+              editChat(e, chat.chatLogId);
+            }}
+          >
+            <FontAwesomeIcon icon={faPen} />
+          </span>
+          <span
+            onClick={(e) => {
+              deleteChat(e, chat.chatLogId);
+            }}
+          >
+            <FontAwesomeIcon icon={faTrash} />
+          </span>
+        </button>
+      );
+    });
+  }
+
+  function editChat(e, id) {
+    e.stopPropagation();
+    console.log(id);
+  }
+
+  function deleteChat(e, id) {
+    e.stopPropagation();
+    console.log(id);
+  }
+
+  function handleChat(id) {
+    const selectedChat = chats.find((chat) => chat.chatLogId === id);
+    setChatLog(selectedChat);
   }
 
   return (
@@ -202,7 +321,9 @@ export default function ChatGPT() {
           </span>
           <span>New chat</span>
         </button>
-        <div className="gpt-sidemenu__chats"></div>
+        <div className="gpt-sidemenu__chats" ref={refMenuChatsContainer}>
+          {renderMenuChats()}
+        </div>
         <select onChange={(e) => setModel(e.target.value)} className="gpt-sidemenu__engine" name="model" id="model">
           <option value="text-davinci-003">text-davinci-003</option>
           <option value="code-davinci-002">code-davinci-002</option>
@@ -214,7 +335,7 @@ export default function ChatGPT() {
             <button ref={refOpenMenu} onClick={handleSideMenu} className="gpt-header__menu gpt-btn">
               <FontAwesomeIcon icon={faBars} />
             </button>
-            <h5 className="gpt-header__text">New Chat</h5>
+            <h5 className="gpt-header__text">{chatLog.title}</h5>
             <button className="gpt-header__plus gpt-btn">
               <FontAwesomeIcon icon={faPlus} />
             </button>
@@ -224,7 +345,7 @@ export default function ChatGPT() {
           <div ref={refAvailable} className="gpt-textbox__available hidden">
             Please grant the microphone permission!
           </div>
-          {chatLog.map((message) => (
+          {chatLog.data.map((message) => (
             <ChatMessage key={uniqueId()} message={message} />
           ))}
         </section>

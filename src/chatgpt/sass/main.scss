@@ -196,9 +196,11 @@
   }
 
   &__chats {
-    color: white;
-    width: 100%;
+    color: #ffffff;
+    width: inherit;
     margin-top: 1rem;
+    width: 100%;
+
     height: 30vh;
     overflow-y: scroll;
 
@@ -208,6 +210,50 @@
       & {
         height: 55vh;
       }
+    }
+  }
+
+  &__chat-button {
+    margin-top: 0.4rem;
+    position: relative;
+    border-radius: 8px;
+    width: 97%;
+    margin-left: 2.5%;
+    cursor: pointer;
+    height: 45px;
+    background-color: $clr-dark;
+    border: none;
+    text-align: left;
+    align-items: center;
+    display: flex;
+    color: rgba(#ffffff, 0.9);
+    font-size: 16px;
+    &:hover {
+      background-color: rgba($clr-primary, 0.45);
+    }
+    span:first-child,
+    :nth-child(2) {
+      margin-left: 5%;
+    }
+    span:nth-child(2) {
+      display: inline-block;
+      width: 65%;
+      font-family: "Times New Roman", Times, serif;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+    span:nth-child(3),
+    span:nth-child(4) {
+      position: absolute;
+      &:hover {
+        color: #ffffff;
+      }
+    }
+    span:nth-child(3) {
+      right: 10%;
+    }
+    span:nth-child(4) {
+      right: 3%;
     }
   }
 
