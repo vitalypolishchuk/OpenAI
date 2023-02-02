@@ -4,11 +4,9 @@ import { createSpeechlySpeechRecognition } from "@speechly/speech-recognition-po
 import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
 import { v4 as uniqueId } from "uuid";
 import { cloneDeep } from "lodash";
-import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMicrophone, faBars, faPlus, faXmark, faComment, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import barsSvg from "../additional/bars.svg";
-import { gptIconPath } from "../additional/gpt-icon-path.js";
 import ChatMessage from "./ChatMessage";
 import apiCall from "./api";
 
@@ -22,26 +20,27 @@ export default function ChatGPT() {
   const [mainContainerHeight, setMainContainerHeight] = useState(100);
   const [isListening, setIsListening] = useState(false);
   const [text, setText] = useState("");
-  const [chats, setChats] = useState([
-    {
-      chatLogId: "12",
-      title: "GET Request Generation Example",
-      data: [
-        { user: "gpt", message: "how can I help you? 12" },
-        { user: "me", message: "Say this is a test 12" },
-      ],
-    },
-    {
-      chatLogId: "13",
-      title: "V | Coding",
-      data: [{ user: "gpt", message: "how can I help you? 13" }],
-    },
-    {
-      chatLogId: "14",
-      title: "Read and write me a text to describe",
-      data: [{ user: "gpt", message: "how can I help you? 13" }],
-    },
-  ]); // all chats
+  // const [chats, setChats] = useState([
+  //   {
+  //     chatLogId: "12",
+  //     title: "GET Request Generation Example",
+  //     data: [
+  //       { user: "gpt", message: "how can I help you? 12" },
+  //       { user: "me", message: "Say this is a test 12" },
+  //     ],
+  //   },
+  //   {
+  //     chatLogId: "13",
+  //     title: "V | Coding",
+  //     data: [{ user: "gpt", message: "how can I help you? 13" }],
+  //   },
+  //   {
+  //     chatLogId: "14",
+  //     title: "Read and write me a text to describe",
+  //     data: [{ user: "gpt", message: "how can I help you? 13" }],
+  //   },
+  // ]); // all chats
+  const [chats, setChats] = useState([]);
   const [chatLog, setChatLog] = useState({ chatLogId: "", title: "New Chat", data: [{ user: "gpt", message: "how can I help you today?" }] }); // current chat
   const [chatTranscript, setChatTranscript] = useState("");
   const [editChatId, setEditChatId] = useState("");
@@ -68,6 +67,38 @@ export default function ChatGPT() {
   let { transcript, resetTranscript, listening, browserSupportsSpeechRecognition, isMicrophoneAvailable } = useSpeechRecognition();
 
   useEffect(() => {
+    const headerHeight = parseFloat(getComputedStyle(refHeader.current).getPropertyValue("height"));
+    const chatGptHeight = parseFloat(getComputedStyle(refChatGpt.current).getPropertyValue("height"));
+
+    // calc the height for .gpt-textbox
+    refTextBox.current.style.height = window.innerHeight - headerHeight - chatGptHeight - 2.5 + "px";
+    // containerHeight is the height of textarea, 60 is the additional height of the chat-gpt text
+    setMainContainerHeight(window.innerHeight - containerHeight - 60);
+  }, [containerHeight, innerHeight]);
+
+  useEffect(() => {
+    handleListen();
+  }, [isListening]);
+
+  useEffect(() => {
+    window.addEventListener("resize", onResize);
+    window.addEventListener("click", handleCloseSideMenu);
+
+    handleLocalStorage();
+
+    if (browserSupportsSpeechRecognition) {
+      // check if speech is not supported by the browser
+      refMicrophone.current.classList.remove("none");
+    }
+    textToSpeech();
+
+    return () => {
+      window.addEventListener("click", handleCloseSideMenu);
+      window.removeEventListener("resize", onResize);
+    };
+  }, []);
+
+  useEffect(() => {
     // Chat transcript is the text which was hand-written by user, whereas Transcript is the recorded audio by user.
     setText(chatTranscript + " " + transcript);
   }, [transcript]);
@@ -78,18 +109,20 @@ export default function ChatGPT() {
   }, [chatTranscript]);
 
   useEffect(() => {
-    // console.log(chats);
+    const data = localStorage.getItem("chats");
+    const strChats = JSON.stringify(cloneDeep(chats));
+    if (chats.length !== 0 && data !== strChats) localStorage.setItem("chats", strChats);
   }, [chats]);
 
-  useEffect(() => {}, [editChatId]);
-
   useLayoutEffect(() => {
-    refChatNameInput.current.focus();
+    if (refChatNameInput.current) {
+      refChatNameInput.current.focus();
+    }
   }, [titleName]);
 
   useEffect(() => {
     // user wrote first message && there is no chatLogId
-    if (chatLog.data.length === 2 && chatLog.chatLogId === "") {
+    if (chatLog.data.length === 3 && chatLog.chatLogId === "") {
       // we set chatLogId
       const chatLogId = uniqueId();
       setChatLog({ chatLogId: chatLogId, title: chatLog.title, data: [...chatLog.data] });
@@ -124,36 +157,6 @@ export default function ChatGPT() {
     };
     fetchData();
   }, [chatLog]);
-
-  useEffect(() => {
-    const headerHeight = parseFloat(getComputedStyle(refHeader.current).getPropertyValue("height"));
-    const chatGptHeight = parseFloat(getComputedStyle(refChatGpt.current).getPropertyValue("height"));
-
-    // calc the height for .gpt-textbox
-    refTextBox.current.style.height = window.innerHeight - headerHeight - chatGptHeight - 2.5 + "px";
-    // containerHeight is the height of textarea, 60 is the additional height of the chat-gpt text
-    setMainContainerHeight(window.innerHeight - containerHeight - 60);
-  }, [containerHeight, innerHeight]);
-
-  useEffect(() => {
-    handleListen();
-  }, [isListening]);
-
-  useEffect(() => {
-    textToSpeech();
-    window.addEventListener("resize", onResize);
-    window.addEventListener("click", handleCloseSideMenu);
-
-    if (browserSupportsSpeechRecognition) {
-      // check if speech is not supported by the browser
-      refMicrophone.current.classList.remove("none");
-    }
-
-    return () => {
-      window.addEventListener("click", handleCloseSideMenu);
-      window.removeEventListener("resize", onResize);
-    };
-  }, []);
 
   useEffect(() => {
     handleText();
@@ -253,6 +256,12 @@ export default function ChatGPT() {
     setChatLog({ chatLogId: "", title: "New Chat", data: [{ user: "gpt", message: "how can I help you today?" }] });
   }
 
+  function handleLocalStorage() {
+    console.log("get");
+    const data = localStorage.getItem("chats");
+    if (data) setChats(JSON.parse(data));
+  }
+
   function renderMenuChats() {
     return chats.map((chat) => {
       return (
@@ -262,7 +271,7 @@ export default function ChatGPT() {
           }}
           data-chatlogid={chat.chatLogId}
           key={chat.chatLogId}
-          className="gpt-sidemenu__chat-button"
+          className={`${chat.chatLogId === chatLog.chatLogId ? "bg-selected" : ""} gpt-sidemenu__chat-button`}
         >
           <span>
             <FontAwesomeIcon icon={faComment} />
