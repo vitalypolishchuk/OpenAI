@@ -482,3 +482,7 @@
 .hidden {
   visibility: hidden !important;
 }
+
+.bg-selected {
+  background-color: $clr-secondary;
+}
