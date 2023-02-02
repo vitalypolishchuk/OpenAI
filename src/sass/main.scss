@@ -68,14 +68,7 @@ textarea {
   border-color: Transparent;
 }
 
-textarea:focus {
+textarea:focus,
+input:focus {
   outline: none;
-}
-
-.none {
-  display: none;
-}
-
-.hidden {
-  visibility: hidden;
 }

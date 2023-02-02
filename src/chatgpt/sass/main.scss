@@ -255,6 +255,36 @@
     span:nth-child(4) {
       right: 3%;
     }
+    input {
+      display: inline-block;
+      width: 55%;
+      background-color: $clr-dark;
+      border: 1px solid $clr-light;
+      margin-left: 3%;
+      border-radius: 4px;
+      font-family: "Times New Roman", Times, serif;
+      color: $clr-message;
+
+      @include respond(sm) {
+        width: 65%;
+      }
+    }
+    &__save-edit {
+      position: absolute;
+      right: 11%;
+      width: 17px;
+      height: 17px;
+      color: $clr-light-2;
+      rotate: 90deg;
+      cursor: pointer;
+      border-radius: 7px;
+      background-color: transparent;
+      border: none;
+
+      &:hover {
+        background-color: $clr-dark;
+      }
+    }
   }
 
   &__engine {
@@ -442,4 +472,13 @@
 
 .light {
   background-color: $clr-primary;
+}
+
+//
+.none {
+  display: none !important;
+}
+
+.hidden {
+  visibility: hidden !important;
 }
