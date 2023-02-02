@@ -1,8 +1,9 @@
 import "./sass/main.scss";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { createSpeechlySpeechRecognition } from "@speechly/speech-recognition-polyfill";
 import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
 import { v4 as uniqueId } from "uuid";
+import { cloneDeep } from "lodash";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMicrophone, faBars, faPlus, faXmark, faComment, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
@@ -33,22 +34,18 @@ export default function ChatGPT() {
     {
       chatLogId: "13",
       title: "V | Coding",
-      data: [
-        { user: "gpt", message: "how can I help you? 13" },
-        { user: "me", message: "Say this is a test 13" },
-      ],
+      data: [{ user: "gpt", message: "how can I help you? 13" }],
     },
     {
       chatLogId: "14",
       title: "Read and write me a text to describe",
-      data: [
-        { user: "gpt", message: "how can I help you? 13" },
-        { user: "me", message: "Say this is a test 13" },
-      ],
+      data: [{ user: "gpt", message: "how can I help you? 13" }],
     },
   ]); // all chats
   const [chatLog, setChatLog] = useState({ chatLogId: "", title: "New Chat", data: [{ user: "gpt", message: "how can I help you today?" }] }); // current chat
   const [chatTranscript, setChatTranscript] = useState("");
+  const [editChatId, setEditChatId] = useState("");
+  const [titleName, setTitleName] = useState("");
   const [containerHeight, setContainerHeight] = useState(39);
   const [innerHeight, setInnerHeight] = useState(window.innerHeight);
   const [isMicrophoneTurnd, seisMicrophoneTurnd] = useState();
@@ -65,6 +62,7 @@ export default function ChatGPT() {
   const refOpenMenu = useRef();
   const refCloseSideMenu = useRef();
   const refMenuChatsContainer = useRef();
+  const refChatNameInput = useRef();
 
   // react-speech-recognition API with Speechly
   let { transcript, resetTranscript, listening, browserSupportsSpeechRecognition, isMicrophoneAvailable } = useSpeechRecognition();
@@ -80,11 +78,16 @@ export default function ChatGPT() {
   }, [chatTranscript]);
 
   useEffect(() => {
-    console.log(chats);
+    // console.log(chats);
   }, [chats]);
 
+  useEffect(() => {}, [editChatId]);
+
+  useLayoutEffect(() => {
+    refChatNameInput.current.focus();
+  }, [titleName]);
+
   useEffect(() => {
-    console.log(chatLog);
     // user wrote first message && there is no chatLogId
     if (chatLog.data.length === 2 && chatLog.chatLogId === "") {
       // we set chatLogId
@@ -118,7 +121,6 @@ export default function ChatGPT() {
     const fetchData = async () => {
       const response = await apiCall(messages, model);
       setChatLog({ chatLogId: chatLog.chatLogId, title: chatLog.title, data: [...chatLog.data, { user: "gpt", message: response.message }] });
-      //console.log(response.data.message);
     };
     fetchData();
   }, [chatLog]);
@@ -163,15 +165,6 @@ export default function ChatGPT() {
       voice: "en-AU-Standard-B",
       content: ["Hello, my name is Jarvis. How can I help you?"],
     };
-
-    // const headers = {
-    //   "Content-Type": "application/json",
-    //   Authorization: "6b74a99a6d604b17af99c7d92427bc43",
-    //   "X-User-ID": "MZSUwThiXrfFCfUDmxBRLZd0C702",
-    // };
-    // const response = await axios.post(url, body, { headers: headers });
-    // console.log(response);
-    // const getResponse = await axios.get("https://play.ht/api/v1/articleStatus");
   }
 
   async function handleListen() {
@@ -268,14 +261,15 @@ export default function ChatGPT() {
             handleChat(chat.chatLogId);
           }}
           data-chatlogid={chat.chatLogId}
-          key={uniqueId()}
+          key={chat.chatLogId}
           className="gpt-sidemenu__chat-button"
         >
           <span>
             <FontAwesomeIcon icon={faComment} />
           </span>
-          <span>{chat.title}</span>
+          <span className={chat.chatLogId === editChatId ? "none" : ""}>{chat.title}</span>
           <span
+            className={`${chat.chatLogId === chatLog.chatLogId && chat.chatLogId !== editChatId ? "" : "none"}`}
             onClick={(e) => {
               editChat(e, chat.chatLogId);
             }}
@@ -283,11 +277,35 @@ export default function ChatGPT() {
             <FontAwesomeIcon icon={faPen} />
           </span>
           <span
+            className={`${chat.chatLogId === chatLog.chatLogId ? "" : "none"}`}
             onClick={(e) => {
               deleteChat(e, chat.chatLogId);
             }}
           >
             <FontAwesomeIcon icon={faTrash} />
+          </span>
+          <input
+            ref={refChatNameInput}
+            value={titleName}
+            onChange={(e) => setTitleName(e.target.value)}
+            type="text"
+            className={chat.chatLogId === editChatId ? "" : "none"}
+          />
+          <span
+            onClick={(e) => handleSaveNameChat(e, chat.chatLogId)}
+            className={`${chat.chatLogId === chatLog.chatLogId && chat.chatLogId === editChatId ? "gpt-sidemenu__chat-button__save-edit" : "none"}`}
+          >
+            <svg
+              stroke="currentColor"
+              fill="currentColor"
+              strokeWidth="0"
+              viewBox="0 0 20 20"
+              height="1em"
+              width="1em"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path>
+            </svg>
           </span>
         </button>
       );
@@ -296,17 +314,27 @@ export default function ChatGPT() {
 
   function editChat(e, id) {
     e.stopPropagation();
-    console.log(id);
+    setEditChatId(id);
   }
 
   function deleteChat(e, id) {
     e.stopPropagation();
-    console.log(id);
+    const findChatIndex = chats.findIndex((chat) => chat.chatLogId === id);
+    setChats([...chats.slice(0, findChatIndex), ...chats.slice(findChatIndex + 1)]);
+    newChat();
   }
 
   function handleChat(id) {
     const selectedChat = chats.find((chat) => chat.chatLogId === id);
     setChatLog(selectedChat);
+  }
+
+  function handleSaveNameChat(e, id) {
+    const findChatIndex = chats.findIndex((chat) => chat.chatLogId === id);
+    const objCopy = cloneDeep(chats[findChatIndex]);
+    objCopy.title = titleName;
+    setChats([...chats.slice(0, findChatIndex), objCopy, ...chats.slice(findChatIndex + 1)]);
+    setEditChatId("");
   }
 
   return (
