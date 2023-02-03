@@ -2,6 +2,7 @@ import "./sass/main.scss";
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { createSpeechlySpeechRecognition } from "@speechly/speech-recognition-polyfill";
 import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
+import axios from "axios";
 import { v4 as uniqueId } from "uuid";
 import { cloneDeep } from "lodash";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -10,10 +11,14 @@ import barsSvg from "../additional/bars.svg";
 import ChatMessage from "./ChatMessage";
 import apiCall from "./api";
 
-// If the quota is exceeded, set up new appId from Speechly API.
+// Voice Recognition API. If the quota is exceeded, set up new appId from Speechly API.
 const appId = process.env.REACT_APP_SPEECHLY_API_KEY;
 const SpeechlySpeechRecognition = createSpeechlySpeechRecognition(appId);
 SpeechRecognition.applyPolyfill(SpeechlySpeechRecognition);
+
+// text to speech API
+const userId = process.env.REACT_APP_TEXT_TO_SPEECH_USER_ID;
+const secretKey = process.env.REACT_APP_TEXT_TO_SPEECH_KEY;
 
 export default function ChatGPT() {
   const [model, setModel] = useState("text-davinci-003");
@@ -41,10 +46,17 @@ export default function ChatGPT() {
   //   },
   // ]); // all chats
   const [chats, setChats] = useState([]);
-  const [chatLog, setChatLog] = useState({ chatLogId: "", title: "New Chat", data: [{ user: "gpt", message: "how can I help you today?" }] }); // current chat
+  const [chatLog, setChatLog] = useState({
+    chatLogId: "",
+    title: "New Chat",
+    data: [{ user: "gpt", message: "how can I help you today?", soundUrl: "", messageId: uniqueId() }],
+  }); // current chat
+  const [hasRendered, setHasRendered] = useState(false);
   const [chatTranscript, setChatTranscript] = useState("");
   const [editChatId, setEditChatId] = useState("");
   const [titleName, setTitleName] = useState("");
+  const [audioUrl, setAudioUrl] = useState("");
+  const [isPlaying, setIsPlaying] = useState(false);
   const [containerHeight, setContainerHeight] = useState(39);
   const [innerHeight, setInnerHeight] = useState(window.innerHeight);
   const [isMicrophoneTurnd, seisMicrophoneTurnd] = useState();
@@ -62,6 +74,7 @@ export default function ChatGPT() {
   const refCloseSideMenu = useRef();
   const refMenuChatsContainer = useRef();
   const refChatNameInput = useRef();
+  const refAudio = useRef();
 
   // react-speech-recognition API with Speechly
   let { transcript, resetTranscript, listening, browserSupportsSpeechRecognition, isMicrophoneAvailable } = useSpeechRecognition();
@@ -90,7 +103,6 @@ export default function ChatGPT() {
       // check if speech is not supported by the browser
       refMicrophone.current.classList.remove("none");
     }
-    textToSpeech();
 
     return () => {
       window.addEventListener("click", handleCloseSideMenu);
@@ -109,10 +121,12 @@ export default function ChatGPT() {
   }, [chatTranscript]);
 
   useEffect(() => {
+    console.log(chatLog);
     const data = localStorage.getItem("chats");
     const strChats = JSON.stringify(cloneDeep(chats));
-    if (chats.length !== 0 && data !== strChats) localStorage.setItem("chats", strChats);
-  }, [chats]);
+    if (hasRendered && data !== strChats) localStorage.setItem("chats", strChats);
+    if (!hasRendered) setHasRendered(true); // we want to trigger [chats, hasRendered] useEffect not the initial time, but only after it was rendered at least once. The problem with complex types (in our case []) is that useEffect is being triggered even when these variables are initially set. This happens because the reference of these variables in memory is different between renders, even though the content is the same
+  }, [chats, hasRendered]);
 
   useLayoutEffect(() => {
     if (refChatNameInput.current) {
@@ -152,8 +166,13 @@ export default function ChatGPT() {
     }, chatLog.data[1].message);
 
     const fetchData = async () => {
+      console.log(chatLog);
       const response = await apiCall(messages, model);
-      setChatLog({ chatLogId: chatLog.chatLogId, title: chatLog.title, data: [...chatLog.data, { user: "gpt", message: response.message }] });
+      setChatLog({
+        chatLogId: chatLog.chatLogId,
+        title: chatLog.title,
+        data: [...chatLog.data, { user: "gpt", message: response.message, soundUrl: "", messageId: uniqueId() }],
+      });
     };
     fetchData();
   }, [chatLog]);
@@ -162,12 +181,85 @@ export default function ChatGPT() {
     handleText();
   }, [text]);
 
-  async function textToSpeech() {
-    const url = "https://play.ht/api/v1/convert";
-    const body = {
-      voice: "en-AU-Standard-B",
-      content: ["Hello, my name is Jarvis. How can I help you?"],
-    };
+  useEffect(() => {
+    if (audioUrl) {
+      setIsPlaying(true);
+    }
+  }, [audioUrl]);
+
+  useEffect(() => {
+    if (isPlaying) {
+      refAudio.current.play();
+      setIsPlaying(false);
+    }
+  }, [isPlaying]);
+
+  async function textToSpeech(text, chatId, messageId) {
+    // check if current chatLog is the same as the one from which text-to-speech was asked
+    if (chatLog.chatLogId === chatId) {
+      // find corresponding message
+      const msgIndex = chatLog.data.findIndex((msg) => {
+        if (msg.user === "gpt") {
+          return msg.messageId === messageId;
+        }
+      });
+      // find the message already has mp3 url (we saved it earlier)
+      if (chatLog.data[msgIndex].soundUrl) {
+        // audioUrl state is ready to play the music
+        if (audioUrl === chatLog.data[msgIndex].soundUrl) {
+          refAudio.current.play();
+        } else {
+          setAudioUrl(chatLog.data[msgIndex].soundUrl);
+          return;
+        }
+        return;
+      }
+
+      // we did not find mp3 link, create new
+      const url = "https://play.ht/api/v1";
+      const headers = {
+        "Content-Type": "application/json",
+        Authorization: secretKey,
+        "X-User-ID": userId,
+      };
+      const body = {
+        voice: "en-AU-Standard-B",
+        content: [text],
+      };
+
+      const response = await axios.post(url + "/convert", body, { headers: headers }); // contains transcriptionId to check the status of mp3 convert
+      const transcriptionId = response.data.transcriptionId;
+
+      let converted = false;
+
+      while (!converted) {
+        try {
+          // waiting for 1 second to let convert happen
+          await new Promise((resolve) => setTimeout(resolve, 300));
+          // check if the msg was already converted to mp3
+          const responseStatus = await axios.get(url + `/articleStatus?transcriptionId=${transcriptionId}`, { headers: headers });
+          converted = responseStatus.data.converted;
+          // current chat === chat in which text-to-speech was asked for
+          if (chatLog.chatLogId === chatId) {
+            if (msgIndex !== -1) {
+              // create new data with messages, to update the current one
+              const msgCopy = cloneDeep(chatLog.data[msgIndex]);
+              msgCopy.soundUrl = responseStatus.data.audioUrl;
+              const data = [...chatLog.data.slice(0, msgIndex), msgCopy, ...chatLog.data.slice(msgIndex + 1)];
+              // set new data with mp3 link for the message
+              setChatLog({
+                chatLogId: chatLog.chatLogId,
+                title: chatLog.title,
+                data: data,
+              });
+            }
+          }
+          setAudioUrl(responseStatus.data.audioUrl);
+        } catch (error) {
+          console.error(error);
+        }
+      }
+    }
   }
 
   async function handleListen() {
@@ -253,11 +345,14 @@ export default function ChatGPT() {
   function newChat() {
     setChatTranscript("");
     setText("");
-    setChatLog({ chatLogId: "", title: "New Chat", data: [{ user: "gpt", message: "how can I help you today?" }] });
+    setChatLog({
+      chatLogId: "",
+      title: "New Chat",
+      data: [{ user: "gpt", message: "how can I help you today?", soundUrl: "", messageId: uniqueId() }],
+    });
   }
 
   function handleLocalStorage() {
-    console.log("get");
     const data = localStorage.getItem("chats");
     if (data) setChats(JSON.parse(data));
   }
@@ -383,7 +478,7 @@ export default function ChatGPT() {
             Please grant the microphone permission!
           </div>
           {chatLog.data.map((message) => (
-            <ChatMessage key={uniqueId()} message={message} />
+            <ChatMessage key={uniqueId()} message={message} textToSpeech={textToSpeech} chatLogId={chatLog.chatLogId} />
           ))}
         </section>
         <section ref={refChatGpt} className="chat-gpt" style={{ height: 60 + containerHeight + "px" }}>
@@ -424,6 +519,7 @@ export default function ChatGPT() {
             </span>
           </div>
         </section>
+        <audio ref={refAudio} src={audioUrl} id="audio"></audio>
         <div className="overlay hidden" ref={refOverlay}></div>
       </div>
     </div>
