@@ -20,6 +20,9 @@ SpeechRecognition.applyPolyfill(SpeechlySpeechRecognition);
 const userId = process.env.REACT_APP_TEXT_TO_SPEECH_USER_ID;
 const secretKey = process.env.REACT_APP_TEXT_TO_SPEECH_KEY;
 
+console.log(secretKey);
+console.log(userId);
+
 export default function ChatGPT() {
   const [model, setModel] = useState("text-davinci-003");
   const [mainContainerHeight, setMainContainerHeight] = useState(100);
