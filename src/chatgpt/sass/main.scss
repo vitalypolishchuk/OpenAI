@@ -448,6 +448,8 @@
     }
 
     span:first-child {
+      display: inline-block;
+      margin-right: 0.3rem;
       text-decoration-line: underline;
     }
     span:nth-child(2) {

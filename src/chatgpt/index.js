@@ -24,6 +24,7 @@ export default function ChatGPT() {
   const [model, setModel] = useState("text-davinci-003");
   const [mainContainerHeight, setMainContainerHeight] = useState(100);
   const [isListening, setIsListening] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(true);
   const [text, setText] = useState("");
   // const [chats, setChats] = useState([
   //   {
@@ -111,6 +112,7 @@ export default function ChatGPT() {
   }, []);
 
   useEffect(() => {
+    console.log("chatTranscript: ", chatTranscript, "text: ", text, "transcript: ", transcript);
     // Chat transcript is the text which was hand-written by user, whereas Transcript is the recorded audio by user.
     setText(chatTranscript + " " + transcript);
   }, [transcript]);
@@ -121,7 +123,6 @@ export default function ChatGPT() {
   }, [chatTranscript]);
 
   useEffect(() => {
-    console.log(chatLog);
     const data = localStorage.getItem("chats");
     const strChats = JSON.stringify(cloneDeep(chats));
     if (hasRendered && data !== strChats) localStorage.setItem("chats", strChats);
@@ -135,11 +136,13 @@ export default function ChatGPT() {
   }, [titleName]);
 
   useEffect(() => {
+    setTitleName(chatLog.title);
     // user wrote first message && there is no chatLogId
     if (chatLog.data.length === 3 && chatLog.chatLogId === "") {
       // we set chatLogId
       const chatLogId = uniqueId();
-      setChatLog({ chatLogId: chatLogId, title: chatLog.title, data: [...chatLog.data] });
+      const firstMessage = chatLog.data.find((msg) => msg.user === "me");
+      setChatLog({ chatLogId: chatLogId, title: firstMessage.message, data: [...chatLog.data] });
     }
 
     // if the chatLog has chatLogId
@@ -158,16 +161,10 @@ export default function ChatGPT() {
     refTextBox.current.scrollTop = refTextBox.current.scrollHeight;
     if (chatLog.data[chatLog.data.length - 1].user === "gpt") return;
 
-    const messages = chatLog.data.reduce((prev, cur, id) => {
-      if (id === 0) return "";
-      if (id === 1) return prev + cur.message;
-
-      return prev + "\n" + cur.message;
-    }, chatLog.data[1].message);
+    const message = chatLog.data[chatLog.data.length - 1].message;
 
     const fetchData = async () => {
-      console.log(chatLog);
-      const response = await apiCall(messages, model);
+      const response = await apiCall(message, model);
       setChatLog({
         chatLogId: chatLog.chatLogId,
         title: chatLog.title,
@@ -333,13 +330,14 @@ export default function ChatGPT() {
     refOverlay.current.classList.remove("visible-overlay");
   }
 
-  async function handleSubmit(e) {
+  function handleSubmit(e) {
     e.preventDefault();
+    // e.stopPropagation();
     setIsListening(false);
     if (text === "") return;
     setChatLog({ chatLogId: chatLog.chatLogId, title: chatLog.title, data: [...chatLog.data, { user: "me", message: text }] });
+    resetTranscript("");
     setChatTranscript("");
-    setText("");
   }
 
   function newChat() {
@@ -361,8 +359,8 @@ export default function ChatGPT() {
     return chats.map((chat) => {
       return (
         <button
-          onClick={() => {
-            handleChat(chat.chatLogId);
+          onClick={(e) => {
+            handleChat(chat.chatLogId, e);
           }}
           data-chatlogid={chat.chatLogId}
           key={chat.chatLogId}
@@ -428,16 +426,22 @@ export default function ChatGPT() {
     newChat();
   }
 
-  function handleChat(id) {
+  function handleChat(id, e) {
     const selectedChat = chats.find((chat) => chat.chatLogId === id);
     setChatLog(selectedChat);
   }
 
   function handleSaveNameChat(e, id) {
-    const findChatIndex = chats.findIndex((chat) => chat.chatLogId === id);
-    const objCopy = cloneDeep(chats[findChatIndex]);
-    objCopy.title = titleName;
-    setChats([...chats.slice(0, findChatIndex), objCopy, ...chats.slice(findChatIndex + 1)]);
+    e.stopPropagation();
+    setChatLog({
+      chatLogId: chatLog.chatLogId,
+      title: titleName,
+      data: [...chatLog.data],
+    });
+    // const findChatIndex = chats.findIndex((chat) => chat.chatLogId === id);
+    // const objCopy = cloneDeep(chats[findChatIndex]);
+    // objCopy.title = titleName;
+    // setChats([...chats.slice(0, findChatIndex), objCopy, ...chats.slice(findChatIndex + 1)]);
     setEditChatId("");
   }
 
@@ -468,7 +472,7 @@ export default function ChatGPT() {
               <FontAwesomeIcon icon={faBars} />
             </button>
             <h5 className="gpt-header__text">{chatLog.title}</h5>
-            <button className="gpt-header__plus gpt-btn">
+            <button className="gpt-header__plus gpt-btn" onClick={newChat}>
               <FontAwesomeIcon icon={faPlus} />
             </button>
           </header>
@@ -508,7 +512,13 @@ export default function ChatGPT() {
                 <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path>
               </svg>
             </button>
-            <button ref={refMicrophone} className="microphone none" onClick={() => setIsListening(!isListening)}>
+            <button
+              ref={refMicrophone}
+              className="microphone none"
+              onClick={() => {
+                setIsListening(!isListening);
+              }}
+            >
               <FontAwesomeIcon icon={faMicrophone} />
             </button>
           </div>
