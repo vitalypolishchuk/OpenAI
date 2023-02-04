@@ -268,6 +268,7 @@
       right: 3%;
     }
     input {
+      outline: 2px solid red;
       display: inline-block;
       width: 55%;
       background-color: $clr-dark;
@@ -448,6 +449,8 @@
     }
 
     span:first-child {
+      display: inline-block;
+      margin-right: 0.3rem;
       text-decoration-line: underline;
     }
     span:nth-child(2) {
