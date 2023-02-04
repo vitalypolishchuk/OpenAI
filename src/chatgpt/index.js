@@ -112,6 +112,7 @@ export default function ChatGPT() {
   }, []);
 
   useEffect(() => {
+    console.log("chatTranscript: ", chatTranscript, "text: ", text, "transcript: ", transcript);
     // Chat transcript is the text which was hand-written by user, whereas Transcript is the recorded audio by user.
     setText(chatTranscript + " " + transcript);
   }, [transcript]);
@@ -336,6 +337,7 @@ export default function ChatGPT() {
     if (text === "") return;
     setChatLog({ chatLogId: chatLog.chatLogId, title: chatLog.title, data: [...chatLog.data, { user: "me", message: text }] });
     resetTranscript("");
+    setChatTranscript("");
   }
 
   function newChat() {
