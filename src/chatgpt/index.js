@@ -2,11 +2,12 @@ import "./sass/main.scss";
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { createSpeechlySpeechRecognition } from "@speechly/speech-recognition-polyfill";
 import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
+import { speak, stop } from "./speechSynthesis";
 import axios from "axios";
 import { v4 as uniqueId } from "uuid";
 import { cloneDeep } from "lodash";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMicrophone, faBars, faPlus, faXmark, faComment, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faMicrophone, faBars, faPlus, faXmark, faComment, faPen, faTrash, faVolumeHigh, faVolumeXmark } from "@fortawesome/free-solid-svg-icons";
 import barsSvg from "../additional/bars.svg";
 import ChatMessage from "./ChatMessage";
 import apiCall from "./api";
@@ -24,6 +25,7 @@ export default function ChatGPT() {
   const [model, setModel] = useState("text-davinci-003");
   const [mainContainerHeight, setMainContainerHeight] = useState(100);
   const [isListening, setIsListening] = useState(false);
+  const [autoPlay, setAutoPlay] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(true);
   const [text, setText] = useState("");
   // const [chats, setChats] = useState([
@@ -112,7 +114,6 @@ export default function ChatGPT() {
   }, []);
 
   useEffect(() => {
-    console.log("chatTranscript: ", chatTranscript, "text: ", text, "transcript: ", transcript);
     // Chat transcript is the text which was hand-written by user, whereas Transcript is the recorded audio by user.
     setText(chatTranscript + " " + transcript);
   }, [transcript]);
@@ -165,6 +166,7 @@ export default function ChatGPT() {
 
     const fetchData = async () => {
       const response = await apiCall(message, model);
+      if (autoPlay) speak(response.message);
       setChatLog({
         chatLogId: chatLog.chatLogId,
         title: chatLog.title,
@@ -191,72 +193,81 @@ export default function ChatGPT() {
     }
   }, [isPlaying]);
 
+  useEffect(() => {
+    localStorage.setItem("autoplay", JSON.stringify(autoPlay));
+  }, [autoPlay]);
+
   async function textToSpeech(text, chatId, messageId) {
+    speak(text);
+
+    // Play HT API //
     // check if current chatLog is the same as the one from which text-to-speech was asked
-    if (chatLog.chatLogId === chatId) {
-      // find corresponding message
-      const msgIndex = chatLog.data.findIndex((msg) => {
-        if (msg.user === "gpt") {
-          return msg.messageId === messageId;
-        }
-      });
-      // find the message already has mp3 url (we saved it earlier)
-      if (chatLog.data[msgIndex].soundUrl) {
-        // audioUrl state is ready to play the music
-        if (audioUrl === chatLog.data[msgIndex].soundUrl) {
-          refAudio.current.play();
-        } else {
-          setAudioUrl(chatLog.data[msgIndex].soundUrl);
-          return;
-        }
-        return;
-      }
+    // if (chatLog.chatLogId === chatId) {
+    //   // find corresponding message
+    //   const msgIndex = chatLog.data.findIndex((msg) => {
+    //     if (msg.user === "gpt") {
+    //       return msg.messageId === messageId;
+    //     }
+    //   });
+    //   // find the message already has mp3 url (we saved it earlier)
+    //   if (chatLog.data[msgIndex].soundUrl) {
+    //     // audioUrl state is ready to play the music
+    //     if (audioUrl === chatLog.data[msgIndex].soundUrl) {
+    //       refAudio.current.play();
+    //     } else {
+    //       setAudioUrl(chatLog.data[msgIndex].soundUrl);
+    //     }
+    //     return;
+    //   }
 
-      // we did not find mp3 link, create new
-      const url = "https://play.ht/api/v1";
-      const headers = {
-        "Content-Type": "application/json",
-        Authorization: secretKey,
-        "X-User-ID": userId,
-      };
-      const body = {
-        voice: "en-AU-Standard-B",
-        content: [text],
-      };
+    //   // we did not find mp3 link, create new
+    //   const url = "https://play.ht/api/v1";
+    //   const headers = {
+    //     "Content-Type": "application/json",
+    //     Authorization: secretKey,
+    //     "X-User-ID": userId,
+    //   };
+    //   const body = {
+    //     voice: "en-AU-Standard-B",
+    //     content: [text],
+    //   };
+    //   console.log(headers);
 
-      const response = await axios.post(url + "/convert", body, { headers: headers }); // contains transcriptionId to check the status of mp3 convert
-      const transcriptionId = response.data.transcriptionId;
+    //   const response = await axios.post(url + "/convert", body, { headers: headers }); // contains transcriptionId to check the status of mp3 convert
+    //   console.log(response);
+    //   const transcriptionId = response.data.transcriptionId;
+    //   console.log(transcriptionId);
 
-      let converted = false;
+    //   let converted = false;
 
-      while (!converted) {
-        try {
-          // waiting for 1 second to let convert happen
-          await new Promise((resolve) => setTimeout(resolve, 300));
-          // check if the msg was already converted to mp3
-          const responseStatus = await axios.get(url + `/articleStatus?transcriptionId=${transcriptionId}`, { headers: headers });
-          converted = responseStatus.data.converted;
-          // current chat === chat in which text-to-speech was asked for
-          if (chatLog.chatLogId === chatId) {
-            if (msgIndex !== -1) {
-              // create new data with messages, to update the current one
-              const msgCopy = cloneDeep(chatLog.data[msgIndex]);
-              msgCopy.soundUrl = responseStatus.data.audioUrl;
-              const data = [...chatLog.data.slice(0, msgIndex), msgCopy, ...chatLog.data.slice(msgIndex + 1)];
-              // set new data with mp3 link for the message
-              setChatLog({
-                chatLogId: chatLog.chatLogId,
-                title: chatLog.title,
-                data: data,
-              });
-            }
-          }
-          setAudioUrl(responseStatus.data.audioUrl);
-        } catch (error) {
-          console.error(error);
-        }
-      }
-    }
+    //   while (!converted) {
+    //     try {
+    //       // waiting for 1 second to let convert happen
+    //       await new Promise((resolve) => setTimeout(resolve, 300));
+    //       // check if the msg was already converted to mp3
+    //       const responseStatus = await axios.get(url + `/articleStatus?transcriptionId=${transcriptionId}`, { headers: headers });
+    //       converted = responseStatus.data.converted;
+    //       // current chat === chat in which text-to-speech was asked for
+    //       if (chatLog.chatLogId === chatId) {
+    //         if (msgIndex !== -1) {
+    //           // create new data with messages, to update the current one
+    //           const msgCopy = cloneDeep(chatLog.data[msgIndex]);
+    //           msgCopy.soundUrl = responseStatus.data.audioUrl;
+    //           const data = [...chatLog.data.slice(0, msgIndex), msgCopy, ...chatLog.data.slice(msgIndex + 1)];
+    //           // set new data with mp3 link for the message
+    //           setChatLog({
+    //             chatLogId: chatLog.chatLogId,
+    //             title: chatLog.title,
+    //             data: data,
+    //           });
+    //         }
+    //       }
+    //       setAudioUrl(responseStatus.data.audioUrl);
+    //     } catch (error) {
+    //       console.error(error);
+    //     }
+    //   }
+    // }
   }
 
   async function handleListen() {
@@ -338,6 +349,7 @@ export default function ChatGPT() {
     setChatLog({ chatLogId: chatLog.chatLogId, title: chatLog.title, data: [...chatLog.data, { user: "me", message: text }] });
     resetTranscript("");
     setChatTranscript("");
+    setText("");
   }
 
   function newChat() {
@@ -352,6 +364,9 @@ export default function ChatGPT() {
 
   function handleLocalStorage() {
     const data = localStorage.getItem("chats");
+    const autoPlayData = JSON.parse(localStorage.getItem("autoplay"));
+    console.log(autoPlayData);
+    if (autoPlayData) setAutoPlay(autoPlayData);
     if (data) setChats(JSON.parse(data));
   }
 
@@ -464,6 +479,16 @@ export default function ChatGPT() {
           <option value="text-davinci-003">text-davinci-003</option>
           <option value="code-davinci-002">code-davinci-002</option>
         </select>
+        <button className="gpt-sidemenu__autoplay" onClick={() => setAutoPlay(!autoPlay)}>
+          <span className={`${autoPlay ? "" : "none"}`}>
+            <FontAwesomeIcon icon={faVolumeHigh} />
+          </span>
+          <span className={`${autoPlay ? "" : "none"}`}>Auto-play: ON</span>
+          <span className={`${autoPlay ? "none" : ""}`}>
+            <FontAwesomeIcon icon={faVolumeXmark} />
+          </span>
+          <span className={`${autoPlay ? "none" : ""}`}>Auto-play: OFF</span>
+        </button>
       </aside>
       <div className="gpt-main-container" style={{ height: mainContainerHeight + "px" }}>
         <header ref={refHeader} className="gpt-header">

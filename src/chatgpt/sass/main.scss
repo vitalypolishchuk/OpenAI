@@ -311,6 +311,28 @@
     height: 3rem;
   }
 
+  &__autoplay {
+    width: 95%;
+    margin-top: 1rem;
+    margin-left: 2.5%;
+    background-color: $clr-dark;
+    border: none;
+    color: #ffffff;
+    font-size: 15px;
+    border-radius: 4px;
+    height: 3rem;
+    text-align: left;
+    font-family: "Times New Roman", Times, serif;
+    cursor: pointer;
+
+    &:hover {
+      background-color: rgba($clr-primary, 0.2);
+    }
+    span {
+      padding-left: 1rem;
+    }
+  }
+
   &__close {
     display: inline-block;
     position: absolute;
