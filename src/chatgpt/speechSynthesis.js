@@ -4,7 +4,7 @@ let voices = [];
 
 function getSelectedVoice() {
   voices = synth.getVoices();
-  console.log(voices);
+  // console.log(voices);
   let selectedVoice = voices.find((voice) => {
     return voice.name === "Google UK English Male";
   });

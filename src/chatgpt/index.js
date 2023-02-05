@@ -365,7 +365,6 @@ export default function ChatGPT() {
   function handleLocalStorage() {
     const data = localStorage.getItem("chats");
     const autoPlayData = JSON.parse(localStorage.getItem("autoplay"));
-    console.log(autoPlayData);
     if (autoPlayData) setAutoPlay(autoPlayData);
     if (data) setChats(JSON.parse(data));
   }
