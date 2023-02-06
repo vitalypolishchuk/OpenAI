@@ -220,7 +220,7 @@
 
     @include respond(md) {
       & {
-        height: 55vh;
+        height: 50vh;
       }
     }
   }
@@ -299,6 +299,31 @@
     }
   }
 
+  &__close {
+    display: inline-block;
+    position: absolute;
+    left: 103%;
+    top: 10px;
+    font-size: 2rem;
+    color: #ffffff;
+    border: 2px solid #ffffff;
+    border-radius: 3px;
+    padding: 0.2rem 0.8rem;
+
+    @include respond(md) {
+      display: none;
+    }
+  }
+}
+
+.gpt-additional-menu {
+  height: calc(100vh - 30vh - 69px);
+  overflow-y: scroll;
+
+  @include respond(md) {
+    height: calc(100vh - 50vh - 75px);
+  }
+
   &__engine {
     width: 95%;
     margin-top: 1rem;
@@ -313,7 +338,7 @@
 
   &__autoplay {
     width: 95%;
-    margin-top: 1rem;
+    margin-top: 14px;
     margin-left: 2.5%;
     background-color: $clr-dark;
     border: none;
@@ -333,19 +358,72 @@
     }
   }
 
-  &__close {
-    display: inline-block;
-    position: absolute;
-    left: 103%;
-    top: 10px;
-    font-size: 2rem;
+  &__clear {
+    width: 95%;
+    margin-top: 7px;
+    margin-left: 2.5%;
+    background-color: $clr-dark;
+    border: none;
     color: #ffffff;
-    border: 2px solid #ffffff;
-    border-radius: 3px;
-    padding: 0.2rem 0.8rem;
+    font-size: 15px;
+    border-radius: 4px;
+    height: 3rem;
+    text-align: left;
+    font-family: "Times New Roman", Times, serif;
+    cursor: pointer;
+    &:hover {
+      background-color: rgba($clr-primary, 0.2);
+    }
+    span {
+      padding-left: 1rem;
+    }
+  }
 
-    @include respond(md) {
-      display: none;
+  &__discord {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 95%;
+    margin-top: 7px;
+    margin-left: 2.5%;
+    background-color: $clr-dark;
+    border: none;
+    color: #ffffff;
+    font-size: 15px;
+    border-radius: 4px;
+    height: 3rem;
+    text-align: left;
+    font-family: "Times New Roman", Times, serif;
+    cursor: pointer;
+    &:hover {
+      background-color: rgba($clr-primary, 0.2);
+    }
+    span {
+      padding-left: 1rem;
+    }
+  }
+
+  &__updates {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 95%;
+    margin-top: 7px;
+    margin-left: 2.5%;
+    background-color: $clr-dark;
+    border: none;
+    color: #ffffff;
+    font-size: 15px;
+    border-radius: 4px;
+    height: 3rem;
+    text-align: left;
+    font-family: "Times New Roman", Times, serif;
+    cursor: pointer;
+    &:hover {
+      background-color: rgba($clr-primary, 0.2);
+    }
+    span {
+      padding-left: 1rem;
     }
   }
 }

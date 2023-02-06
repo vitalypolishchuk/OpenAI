@@ -7,7 +7,20 @@ import axios from "axios";
 import { v4 as uniqueId } from "uuid";
 import { cloneDeep } from "lodash";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMicrophone, faBars, faPlus, faXmark, faComment, faPen, faTrash, faVolumeHigh, faVolumeXmark } from "@fortawesome/free-solid-svg-icons";
+import {
+  faMicrophone,
+  faBars,
+  faPlus,
+  faXmark,
+  faComment,
+  faPen,
+  faTrash,
+  faVolumeHigh,
+  faVolumeXmark,
+  faTrashCan,
+  faArrowUpRightFromSquare,
+} from "@fortawesome/free-solid-svg-icons";
+import { faDiscord } from "@fortawesome/free-brands-svg-icons";
 import barsSvg from "../additional/bars.svg";
 import ChatMessage from "./ChatMessage";
 import apiCall from "./api";
@@ -25,7 +38,7 @@ export default function ChatGPT() {
   const [model, setModel] = useState("text-davinci-003");
   const [mainContainerHeight, setMainContainerHeight] = useState(100);
   const [isListening, setIsListening] = useState(false);
-  const [autoPlay, setAutoPlay] = useState(false);
+  const [autoPlay, setAutoPlay] = useState(true);
   const [isSubmitted, setIsSubmitted] = useState(true);
   const [text, setText] = useState("");
   // const [chats, setChats] = useState([
@@ -167,11 +180,15 @@ export default function ChatGPT() {
     const fetchData = async () => {
       const response = await apiCall(message, model);
       if (autoPlay) speak(response.message);
-      setChatLog({
-        chatLogId: chatLog.chatLogId,
-        title: chatLog.title,
-        data: [...chatLog.data, { user: "gpt", message: response.message, soundUrl: "", messageId: uniqueId() }],
-      });
+      try {
+        setChatLog({
+          chatLogId: chatLog.chatLogId,
+          title: chatLog.title,
+          data: [...chatLog.data, { user: "gpt", message: response.message, soundUrl: "", messageId: uniqueId() }],
+        });
+      } catch (err) {
+        console.log(err);
+      }
     };
     fetchData();
   }, [chatLog]);
@@ -459,6 +476,11 @@ export default function ChatGPT() {
     setEditChatId("");
   }
 
+  function handleClearChats() {
+    setChats([]);
+    newChat();
+  }
+
   return (
     <div className="gpt">
       <aside className="gpt-sidemenu" ref={refSideMenu}>
@@ -474,20 +496,40 @@ export default function ChatGPT() {
         <div className="gpt-sidemenu__chats" ref={refMenuChatsContainer}>
           {renderMenuChats()}
         </div>
-        <select onChange={(e) => setModel(e.target.value)} className="gpt-sidemenu__engine" name="model" id="model">
-          <option value="text-davinci-003">text-davinci-003</option>
-          <option value="code-davinci-002">code-davinci-002</option>
-        </select>
-        <button className="gpt-sidemenu__autoplay" onClick={() => setAutoPlay(!autoPlay)}>
-          <span className={`${autoPlay ? "" : "none"}`}>
-            <FontAwesomeIcon icon={faVolumeHigh} />
-          </span>
-          <span className={`${autoPlay ? "" : "none"}`}>Auto-play: ON</span>
-          <span className={`${autoPlay ? "none" : ""}`}>
-            <FontAwesomeIcon icon={faVolumeXmark} />
-          </span>
-          <span className={`${autoPlay ? "none" : ""}`}>Auto-play: OFF</span>
-        </button>
+        <div className="gpt-additional-menu">
+          <select onChange={(e) => setModel(e.target.value)} className="gpt-additional-menu__engine" name="model" id="model">
+            <option value="text-davinci-003">text-davinci-003</option>
+            <option value="code-davinci-002">code-davinci-002</option>
+          </select>
+          <button className="gpt-additional-menu__autoplay" onClick={() => setAutoPlay(!autoPlay)}>
+            <span className={`${autoPlay ? "" : "none"}`}>
+              <FontAwesomeIcon icon={faVolumeHigh} />
+            </span>
+            <span className={`${autoPlay ? "" : "none"}`}>Auto-play: ON</span>
+            <span className={`${autoPlay ? "none" : ""}`}>
+              <FontAwesomeIcon icon={faVolumeXmark} />
+            </span>
+            <span className={`${autoPlay ? "none" : ""}`}>Auto-play: OFF</span>
+          </button>
+          <button className="gpt-additional-menu__clear" onClick={handleClearChats}>
+            <span>
+              <FontAwesomeIcon icon={faTrashCan} />
+            </span>
+            <span>Clear conversations</span>
+          </button>
+          <a href="https://discord.com/invite/openai" className="gpt-additional-menu__discord">
+            <span>
+              <FontAwesomeIcon icon={faDiscord} />
+            </span>
+            <span>Open AI Discord</span>
+          </a>
+          <a href="https://discord.com/invite/openai" className="gpt-additional-menu__updates">
+            <span>
+              <FontAwesomeIcon icon={faArrowUpRightFromSquare} />
+            </span>
+            <span>Updates & FAQ</span>
+          </a>
+        </div>
       </aside>
       <div className="gpt-main-container" style={{ height: mainContainerHeight + "px" }}>
         <header ref={refHeader} className="gpt-header">

@@ -19,7 +19,12 @@ const headers = {
 export default async function apiCall(message = "Say this is a test", model = "text-davinci-003") {
   data.prompt = message;
   data.model = model;
-  const response = await axios.post(url, data, { headers: headers });
-  return { message: response.data.choices[0].text };
+  try {
+    const response = await axios.post(url, data, { headers: headers });
+    return { message: response.data.choices[0].text };
+  } catch (err) {
+    console.log(err);
+    throw new Error(err);
+  }
   // res.json({ message: response.data.choices[0].text });
 }
