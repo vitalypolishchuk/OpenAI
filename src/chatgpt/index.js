@@ -121,7 +121,7 @@ export default function ChatGPT() {
     }
 
     return () => {
-      window.addEventListener("click", handleCloseSideMenu);
+      window.removeEventListener("click", handleCloseSideMenu);
       window.removeEventListener("resize", onResize);
     };
   }, []);
