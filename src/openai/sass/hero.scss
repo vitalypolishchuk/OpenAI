@@ -22,7 +22,8 @@
   top: 0;
   left: 0;
   width: 100%;
-  background-color: rgba(138, 138, 138, 0.75);
+  // background-color: rgba(138, 138, 138, 0.75);
+  backdrop-filter: blur(20px);
   height: 25px;
   outline: none;
   display: flex;

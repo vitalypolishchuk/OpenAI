@@ -1,10 +1,11 @@
 const synth = window.speechSynthesis;
 
 let voices = [];
+let lastText = "";
 
 function getSelectedVoice() {
   voices = synth.getVoices();
-  console.log(voices);
+  // console.log(voices);
   let selectedVoice = voices.find((voice) => {
     return voice.name === "Google UK English Male";
   });
@@ -128,11 +129,15 @@ var speechUtteranceChunker = function (utt, settings, callback) {
 //create an utterance as you normally would...
 
 export function speak(text) {
-  if (synth.speaking) {
-    console.error("Already speaking");
-    return;
+  if (text !== lastText) {
+    stop();
+    lastText = text;
+  } else {
+    if (synth.speaking) {
+      console.error("Already speaking");
+      return;
+    }
   }
-
   var utterance = new SpeechSynthesisUtterance(text);
 
   //modify it as you normally would
