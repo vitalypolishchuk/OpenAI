@@ -21,10 +21,11 @@ export default async function apiCall(message = "Say this is a test", model = "t
   data.model = model;
   try {
     const response = await axios.post(url, data, { headers: headers });
+    console.log(response.data.choices);
     return { message: response.data.choices[0].text };
   } catch (err) {
     console.log(err);
-    throw new Error(err);
+    return err;
   }
   // res.json({ message: response.data.choices[0].text });
 }

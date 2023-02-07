@@ -178,9 +178,9 @@ export default function ChatGPT() {
     const message = chatLog.data[chatLog.data.length - 1].message;
 
     const fetchData = async () => {
-      const response = await apiCall(message, model);
-      if (autoPlay) speak(response.message);
       try {
+        const response = await apiCall(message, model);
+        if (autoPlay) speak(response.message);
         setChatLog({
           chatLogId: chatLog.chatLogId,
           title: chatLog.title,
@@ -310,6 +310,7 @@ export default function ChatGPT() {
       barsRef.current.classList.remove("none");
     } else {
       // Stop listening
+      console.log(transcript);
       SpeechRecognition.stopListening();
       refMicrophone.current.classList.remove("microphone-active");
       barsRef.current.classList.add("none");
@@ -361,11 +362,11 @@ export default function ChatGPT() {
   function handleSubmit(e) {
     e.preventDefault();
     // e.stopPropagation();
-    setIsListening(false);
+    setChatTranscript("");
+    resetTranscript("");
+    // setIsListening(false);
     if (text === "") return;
     setChatLog({ chatLogId: chatLog.chatLogId, title: chatLog.title, data: [...chatLog.data, { user: "me", message: text }] });
-    resetTranscript("");
-    setChatTranscript("");
     setText("");
   }
 
