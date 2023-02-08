@@ -146,6 +146,36 @@
       color: #ffffff;
     }
   }
+
+  &__stop {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 0.7rem 1.3rem;
+    border-radius: 2px;
+    background-color: transparent;
+    color: #ffffff;
+    border: 1px solid $clr-text;
+    cursor: pointer;
+
+    &:hover {
+      background-color: $clr-light;
+    }
+
+    span:first-child {
+      outline: 2px solid #ffffff;
+      color: transparent;
+      font-size: 0.5rem;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0.6rem;
+    }
+    span:nth-child(2) {
+      font-size: 1.1rem;
+      margin-left: 1.5rem;
+    }
+  }
 }
 
 .gpt-btn {
