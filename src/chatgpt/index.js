@@ -19,11 +19,12 @@ import {
   faVolumeXmark,
   faTrashCan,
   faArrowUpRightFromSquare,
+  faSquare,
 } from "@fortawesome/free-solid-svg-icons";
 import { faDiscord } from "@fortawesome/free-brands-svg-icons";
 import barsSvg from "../additional/bars.svg";
 import ChatMessage from "./ChatMessage";
-import apiCall from "./api";
+import { apiCall, abortRequest } from "./api";
 
 // Voice Recognition API. If the quota is exceeded, set up new appId from Speechly API.
 const appId = process.env.REACT_APP_SPEECHLY_API_KEY;
@@ -76,6 +77,9 @@ export default function ChatGPT() {
   const [containerHeight, setContainerHeight] = useState(39);
   const [innerHeight, setInnerHeight] = useState(window.innerHeight);
   const [isMicrophoneTurnd, seisMicrophoneTurnd] = useState();
+  const [cancelRequest, setCancelRequest] = useState(false);
+  const [showStopGenerating, setShowStopGenerating] = useState(false);
+  const [controller, setController] = useState({});
   const barsRef = useRef();
   const refMicrophone = useRef();
   const refTextArea = useRef();
@@ -91,6 +95,7 @@ export default function ChatGPT() {
   const refMenuChatsContainer = useRef();
   const refChatNameInput = useRef();
   const refAudio = useRef();
+  const refCancelRequest = useRef();
 
   // react-speech-recognition API with Speechly
   let { transcript, resetTranscript, listening, browserSupportsSpeechRecognition, isMicrophoneAvailable } = useSpeechRecognition();
@@ -150,6 +155,14 @@ export default function ChatGPT() {
   }, [titleName]);
 
   useEffect(() => {
+    if (cancelRequest) {
+      console.log(controller);
+      abortRequest(controller);
+      setCancelRequest(false);
+    }
+  }, [cancelRequest]);
+
+  useEffect(() => {
     setTitleName(chatLog.title);
     // user wrote first message && there is no chatLogId
     if (chatLog.data.length === 3 && chatLog.chatLogId === "") {
@@ -173,13 +186,17 @@ export default function ChatGPT() {
     }
 
     refTextBox.current.scrollTop = refTextBox.current.scrollHeight;
+    positionCancelRequest();
     if (chatLog.data[chatLog.data.length - 1].user === "gpt") return;
 
     const message = chatLog.data[chatLog.data.length - 1].message;
 
     const fetchData = async () => {
+      const controllerRequest = new AbortController();
+      setController(controllerRequest);
+      setShowStopGenerating(true);
       try {
-        const response = await apiCall(message, model);
+        const response = await apiCall(message, model, controllerRequest.signal);
         if (autoPlay) speak(response.message);
         setChatLog({
           chatLogId: chatLog.chatLogId,
@@ -188,6 +205,8 @@ export default function ChatGPT() {
         });
       } catch (err) {
         console.log(err);
+      } finally {
+        setShowStopGenerating(false);
       }
     };
     fetchData();
@@ -310,7 +329,6 @@ export default function ChatGPT() {
       barsRef.current.classList.remove("none");
     } else {
       // Stop listening
-      console.log(transcript);
       SpeechRecognition.stopListening();
       refMicrophone.current.classList.remove("microphone-active");
       barsRef.current.classList.add("none");
@@ -320,6 +338,7 @@ export default function ChatGPT() {
   function onResize() {
     handleText();
     handleHeight();
+    positionCancelRequest();
   }
 
   function handleText() {
@@ -482,6 +501,18 @@ export default function ChatGPT() {
     newChat();
   }
 
+  function positionCancelRequest() {
+    const scrollHeightTextBox = refTextBox.current.scrollHeight;
+    const heightTextBox = parseFloat(getComputedStyle(refTextBox.current).getPropertyValue("height"));
+    const heightCancelRequest = parseFloat(getComputedStyle(refCancelRequest.current).getPropertyValue("height"));
+    if (scrollHeightTextBox > heightTextBox) {
+      refCancelRequest.current.style.top = scrollHeightTextBox - heightCancelRequest - 10 + "px";
+    } else {
+      refCancelRequest.current.style.top = heightTextBox - heightCancelRequest - 10 + "px";
+      getComputedStyle(refCancelRequest.current).getPropertyValue("top");
+    }
+  }
+
   return (
     <div className="gpt">
       <aside className="gpt-sidemenu" ref={refSideMenu}>
@@ -551,6 +582,12 @@ export default function ChatGPT() {
           {chatLog.data.map((message) => (
             <ChatMessage key={uniqueId()} message={message} textToSpeech={textToSpeech} chatLogId={chatLog.chatLogId} />
           ))}
+          <button ref={refCancelRequest} className={`${showStopGenerating ? "gpt-textbox__stop" : "hidden"}`} onClick={() => setCancelRequest(true)}>
+            <span>
+              <FontAwesomeIcon icon={faSquare} />
+            </span>
+            <span>Stop generating</span>
+          </button>
         </section>
         <section ref={refChatGpt} className="chat-gpt" style={{ height: 60 + containerHeight + "px" }}>
           <div className="chat-gpt__result" style={{ height: containerHeight + "px" }}>
