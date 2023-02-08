@@ -196,6 +196,7 @@ export default function ChatGPT() {
       setController(controllerRequest);
       setShowStopGenerating(true);
       try {
+        const context = chatLog.data.map((objMsg) => objMsg.message);
         const response = await apiCall(message, model, controllerRequest.signal);
         if (autoPlay) speak(response.message);
         setChatLog({
