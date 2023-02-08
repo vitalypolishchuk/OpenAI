@@ -12,7 +12,7 @@ const data = {
   model: "",
   prompt: "",
   temperature: 0.5,
-  max_tokens: 120,
+  max_tokens: 1024,
 };
 
 const headers = {
