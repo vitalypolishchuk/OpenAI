@@ -1,8 +1,16 @@
 import axios from "axios";
+import { Configuration, OpenAIApi } from "openai";
+
+const url = "/completions";
 
 const API_KEY = process.env.REACT_APP_OPENAI_API_KEY;
 
-const url = "https://api.openai.com/v1/completions";
+const configuration = new Configuration({
+  organization: process.env.REACT_APP_OPENAI_ORGANIZATION,
+  apiKey: `${API_KEY}`,
+});
+
+const openai = new OpenAIApi(configuration);
 
 export function abortRequest(controller) {
   controller.abort();
@@ -23,9 +31,9 @@ const headers = {
 export async function apiCall(message = "Say this is a test", model = "text-davinci-003", signal) {
   data.prompt = message;
   data.model = model;
-  console.log(signal);
+
   try {
-    const response = await axios.post(url, data, { headers: headers, signal });
+    const response = await openai.axios.post(openai.basePath + url, data, { headers: headers, signal });
     console.log(response.data.choices);
     return { message: response.data.choices[0].text };
   } catch (err) {
