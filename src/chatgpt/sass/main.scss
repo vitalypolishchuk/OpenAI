@@ -577,6 +577,7 @@
     width: 95%;
     left: 50%;
     transform: translateX(-50%);
+    font-size: 12px;
 
     @include respond(sm) {
       bottom: 5%;
