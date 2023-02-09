@@ -128,7 +128,7 @@ var speechUtteranceChunker = function (utt, settings, callback) {
 
 //create an utterance as you normally would...
 
-export function speak(text) {
+export function speak(text, setStartSpeaking) {
   if (text !== lastText) {
     stop();
     lastText = text;
@@ -155,7 +155,7 @@ export function speak(text) {
     },
     function () {
       //some code to execute when done
-      console.log("done");
+      setStartSpeaking("");
     }
   );
 }
