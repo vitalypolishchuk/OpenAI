@@ -341,6 +341,7 @@ export default function ChatGPT() {
       refMicrophone.current.classList.add("microphone-active");
       barsRef.current.classList.remove("none");
     } else {
+      console.log(SpeechRecognition);
       // Stop listening
       SpeechRecognition.stopListening();
       refMicrophone.current.classList.remove("microphone-active");
@@ -396,7 +397,7 @@ export default function ChatGPT() {
     // e.stopPropagation();
     setChatTranscript("");
     resetTranscript("");
-    // setIsListening(false);
+    setIsListening(false);
     if (text === "") return;
     setChatLog({ chatLogId: chatLog.chatLogId, title: chatLog.title, data: [...chatLog.data, { user: "me", message: text }] });
     setText("");
@@ -502,10 +503,7 @@ export default function ChatGPT() {
       title: titleName,
       data: [...chatLog.data],
     });
-    // const findChatIndex = chats.findIndex((chat) => chat.chatLogId === id);
-    // const objCopy = cloneDeep(chats[findChatIndex]);
-    // objCopy.title = titleName;
-    // setChats([...chats.slice(0, findChatIndex), objCopy, ...chats.slice(findChatIndex + 1)]);
+
     setEditChatId("");
   }
 
@@ -593,7 +591,7 @@ export default function ChatGPT() {
             </span>
             <span>Open AI Discord</span>
           </a>
-          <a href="https://discord.com/invite/openai" className="gpt-additional-menu__updates">
+          <a href="https://help.openai.com/en/collections/3742473-chatgpt" className="gpt-additional-menu__updates">
             <span>
               <FontAwesomeIcon icon={faArrowUpRightFromSquare} />
             </span>
