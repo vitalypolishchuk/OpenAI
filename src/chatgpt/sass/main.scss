@@ -144,6 +144,17 @@
     }
   }
 
+  &__pause {
+    cursor: pointer;
+    position: absolute;
+    left: 102%;
+    font-size: 1.3rem;
+    color: $clr-message;
+    &:hover {
+      color: #ffffff;
+    }
+  }
+
   &__stop {
     position: absolute;
     left: 50%;

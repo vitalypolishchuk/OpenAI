@@ -80,6 +80,7 @@ export default function ChatGPT() {
   const [cancelRequest, setCancelRequest] = useState(false);
   const [showStopGenerating, setShowStopGenerating] = useState(false);
   const [controller, setController] = useState({});
+  const [startSpeaking, setStartSpeaking] = useState("");
   const barsRef = useRef();
   const refMicrophone = useRef();
   const refTextArea = useRef();
@@ -200,7 +201,7 @@ export default function ChatGPT() {
       try {
         const context = chatLog.data.map((objMsg) => objMsg.message);
         const response = await apiCall(message, model, controllerRequest.signal);
-        if (autoPlay) speak(response.message);
+        if (autoPlay) speak(response.message, setStartSpeaking);
         setChatLog({
           chatLogId: chatLog.chatLogId,
           title: chatLog.title,
@@ -239,8 +240,15 @@ export default function ChatGPT() {
     localStorage.setItem("autoplay", JSON.stringify(autoPlay));
   }, [autoPlay]);
 
+  useEffect(() => {
+    if (!startSpeaking) {
+      stop();
+    }
+  }, [startSpeaking]);
+
   async function textToSpeech(text, chatId, messageId) {
-    speak(text);
+    setStartSpeaking(messageId);
+    speak(text, setStartSpeaking);
 
     // Play HT API //
     // check if current chatLog is the same as the one from which text-to-speech was asked
@@ -616,7 +624,14 @@ export default function ChatGPT() {
             Please grant the microphone permission!
           </div>
           {chatLog.data.map((message) => (
-            <ChatMessage key={uniqueId()} message={message} textToSpeech={textToSpeech} chatLogId={chatLog.chatLogId} />
+            <ChatMessage
+              key={uniqueId()}
+              message={message}
+              textToSpeech={textToSpeech}
+              chatLogId={chatLog.chatLogId}
+              startSpeaking={startSpeaking}
+              setStartSpeaking={setStartSpeaking}
+            />
           ))}
           <button ref={refCancelRequest} className={`${showStopGenerating ? "gpt-textbox__stop" : "hidden"}`} onClick={() => setCancelRequest(true)}>
             <span>
