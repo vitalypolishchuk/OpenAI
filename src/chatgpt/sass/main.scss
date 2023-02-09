@@ -85,12 +85,12 @@
     left: 50%;
     transform: translate(-50%, -50%);
     opacity: 1;
-    color: $clr-message;
-    background-color: rgb(187, 50, 0);
+    color: #ffffff;
+    background-color: #df6c2b;
     padding: min(15px, 3vh) min(40px, 10vw);
     text-align: center;
     border-radius: 6px;
-    font-size: 1.1rem;
+    font-size: 1rem;
     box-shadow: 20px -23px 40px -3px rgba(32, 33, 35, 0.1);
   }
 
