@@ -90,12 +90,14 @@ export default function ChatGPT() {
   const refChatGpt = useRef();
   const refHeader = useRef();
   const refAvailable = useRef();
+  const refGptError = useRef();
   const refOpenMenu = useRef();
   const refCloseSideMenu = useRef();
   const refMenuChatsContainer = useRef();
   const refChatNameInput = useRef();
   const refAudio = useRef();
   const refCancelRequest = useRef();
+  const refCancelRequestPopup = useRef();
 
   // react-speech-recognition API with Speechly
   let { transcript, resetTranscript, listening, browserSupportsSpeechRecognition, isMicrophoneAvailable } = useSpeechRecognition();
@@ -128,6 +130,7 @@ export default function ChatGPT() {
     return () => {
       window.removeEventListener("click", handleCloseSideMenu);
       window.removeEventListener("resize", onResize);
+      // window.removeEventListener("transitionend", handleErrorProperties);
     };
   }, []);
 
@@ -156,7 +159,6 @@ export default function ChatGPT() {
 
   useEffect(() => {
     if (cancelRequest) {
-      console.log(controller);
       abortRequest(controller);
       setCancelRequest(false);
     }
@@ -205,7 +207,7 @@ export default function ChatGPT() {
           data: [...chatLog.data, { user: "gpt", message: response.message, soundUrl: "", messageId: uniqueId() }],
         });
       } catch (err) {
-        console.log(err);
+        handleErrorGpt(err);
       } finally {
         setShowStopGenerating(false);
       }
@@ -214,6 +216,9 @@ export default function ChatGPT() {
   }, [chatLog]);
 
   useEffect(() => {
+    if (text === "") {
+      resetTranscript();
+    }
     handleText();
   }, [text]);
 
@@ -317,8 +322,7 @@ export default function ChatGPT() {
           await navigator.mediaDevices.getUserMedia({ audio: true });
         } catch (err) {
           // permission is denied. Show pop-up
-          refAvailable.current.classList.remove("hidden");
-          refAvailable.current.classList.add("transition");
+          handlePopupStyles(refAvailable);
         }
 
         return;
@@ -502,6 +506,31 @@ export default function ChatGPT() {
     newChat();
   }
 
+  function handleErrorGpt(err) {
+    console.log(err.message);
+    if (err?.message === "canceled") {
+      handlePopupStyles(refCancelRequestPopup);
+    } else {
+      handlePopupStyles(refGptError);
+    }
+  }
+
+  async function handlePopupStyles(ref) {
+    ref.current.classList.remove("hidden");
+
+    let timeoutId;
+
+    function timeout() {
+      return new Promise((resolve) => {
+        timeoutId = setTimeout(() => {
+          resolve(ref.current.classList.add("hidden"));
+        }, 3000);
+      }).then(() => clearTimeout(timeoutId));
+    }
+
+    await timeout();
+  }
+
   function positionCancelRequest() {
     const scrollHeightTextBox = refTextBox.current.scrollHeight;
     const heightTextBox = parseFloat(getComputedStyle(refTextBox.current).getPropertyValue("height"));
@@ -577,6 +606,12 @@ export default function ChatGPT() {
           </header>
         </header>
         <section ref={refTextBox} className="gpt-textbox">
+          <div ref={refGptError} className="gpt-textbox__error hidden">
+            Oops! Something went wrong! Try again!
+          </div>
+          <div ref={refCancelRequestPopup} className="gpt-textbox__cancel hidden">
+            Request was cancelled!
+          </div>
           <div ref={refAvailable} className="gpt-textbox__available hidden">
             Please grant the microphone permission!
           </div>
