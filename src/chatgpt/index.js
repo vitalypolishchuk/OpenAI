@@ -397,7 +397,7 @@ export default function ChatGPT() {
     // e.stopPropagation();
     setChatTranscript("");
     resetTranscript("");
-    setIsListening(false);
+    // setIsListening(false);
     if (text === "") return;
     setChatLog({ chatLogId: chatLog.chatLogId, title: chatLog.title, data: [...chatLog.data, { user: "me", message: text }] });
     setText("");
