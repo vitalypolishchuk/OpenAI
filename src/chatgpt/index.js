@@ -202,11 +202,13 @@ export default function ChatGPT() {
         const context = chatLog.data.map((objMsg) => objMsg.message);
         const response = await apiCall(message, model, controllerRequest.signal);
         if (autoPlay) speak(response.message, setStartSpeaking);
+        const newMessageId = uniqueId();
         setChatLog({
           chatLogId: chatLog.chatLogId,
           title: chatLog.title,
-          data: [...chatLog.data, { user: "gpt", message: response.message, soundUrl: "", messageId: uniqueId() }],
+          data: [...chatLog.data, { user: "gpt", message: response.message, soundUrl: "", messageId: newMessageId }],
         });
+        setStartSpeaking(newMessageId);
       } catch (err) {
         handleErrorGpt(err);
       } finally {
@@ -341,7 +343,6 @@ export default function ChatGPT() {
       refMicrophone.current.classList.add("microphone-active");
       barsRef.current.classList.remove("none");
     } else {
-      console.log(SpeechRecognition);
       // Stop listening
       SpeechRecognition.stopListening();
       refMicrophone.current.classList.remove("microphone-active");
