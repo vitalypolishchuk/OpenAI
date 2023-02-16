@@ -76,7 +76,6 @@ export default function ChatGPT() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [containerHeight, setContainerHeight] = useState(39);
   const [innerHeight, setInnerHeight] = useState(window.innerHeight);
-  const [isMicrophoneTurnd, seisMicrophoneTurnd] = useState();
   const [cancelRequest, setCancelRequest] = useState(false);
   const [showStopGenerating, setShowStopGenerating] = useState(false);
   const [controller, setController] = useState({});
@@ -208,7 +207,7 @@ export default function ChatGPT() {
           title: chatLog.title,
           data: [...chatLog.data, { user: "gpt", message: response.message, soundUrl: "", messageId: newMessageId }],
         });
-        setStartSpeaking(newMessageId);
+        if (autoPlay) setStartSpeaking(newMessageId);
       } catch (err) {
         handleErrorGpt(err);
       } finally {
@@ -239,6 +238,7 @@ export default function ChatGPT() {
   }, [isPlaying]);
 
   useEffect(() => {
+    console.log(autoPlay);
     localStorage.setItem("autoplay", JSON.stringify(autoPlay));
   }, [autoPlay]);
 
@@ -416,8 +416,8 @@ export default function ChatGPT() {
 
   function handleLocalStorage() {
     const data = localStorage.getItem("chats");
-    const autoPlayData = JSON.parse(localStorage.getItem("autoplay"));
-    if (autoPlayData) setAutoPlay(autoPlayData);
+    const autoPlayData = localStorage.getItem("autoplay") === "true";
+    if (autoPlayData !== autoPlay) setAutoPlay(autoPlayData);
     if (data) setChats(JSON.parse(data));
   }
 
