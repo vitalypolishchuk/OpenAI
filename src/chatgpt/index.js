@@ -28,8 +28,8 @@ import { apiCall, abortRequest } from "./api";
 
 // Voice Recognition API. If the quota is exceeded, set up new appId from Speechly API.
 const appId = process.env.REACT_APP_SPEECHLY_API_KEY;
-const SpeechlySpeechRecognition = createSpeechlySpeechRecognition(appId);
-SpeechRecognition.applyPolyfill(SpeechlySpeechRecognition);
+// const SpeechlySpeechRecognition = createSpeechlySpeechRecognition(appId);
+// SpeechRecognition.applyPolyfill(SpeechlySpeechRecognition);
 
 // text to speech API
 const userId = process.env.REACT_APP_TEXT_TO_SPEECH_USER_ID;
@@ -550,6 +550,25 @@ export default function ChatGPT() {
     }
   }
 
+  function transformTitle() {
+    // Ideally, we want to return title, which is ended by full word
+
+    // if the length of title < 15 return title
+    if (chatLog.title.length < 15) return chatLog.title;
+
+    // turn letters into an array of letters from 15th to 30th letter
+    const arrayOfLetters = chatLog.title.slice(15, 31).split("");
+    // find space between 15th and 30th letters
+    const spaceIndex = arrayOfLetters.findIndex((letter, index) => {
+      return letter === " ";
+    });
+    // if we found space, we need to return the title, from the beginning to that space
+    if (spaceIndex !== -1) return chatLog.title.slice(0, spaceIndex + 15);
+
+    // if we did not find space, just return title up to 30th letter
+    return chatLog.title.slice(0, 31);
+  }
+
   return (
     <div className="gpt">
       <aside className="gpt-sidemenu" ref={refSideMenu}>
@@ -606,7 +625,7 @@ export default function ChatGPT() {
             <button ref={refOpenMenu} onClick={handleSideMenu} className="gpt-header__menu gpt-btn">
               <FontAwesomeIcon icon={faBars} />
             </button>
-            <h5 className="gpt-header__text">{chatLog.title}</h5>
+            <h5 className="gpt-header__text">{transformTitle()}</h5>
             <button className="gpt-header__plus gpt-btn" onClick={newChat}>
               <FontAwesomeIcon icon={faPlus} />
             </button>
