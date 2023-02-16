@@ -1,3 +1,3 @@
 ## Link to the website
 
-https://openai-fun.netlify.app/chatgpt
+https://openai-fun.netlify.app
