@@ -122,6 +122,9 @@ var speechUtteranceChunker = function (utt, settings, callback) {
   console.log(newUtt); //IMPORTANT!! Do not remove: Logging the object out fixes some onend firing issues.
   //placing the speak invocation inside a callback fixes ordering and onend issues.
   setTimeout(function () {
+    if (newUtt.text.split("")[0] === ".") {
+      newUtt.text = newUtt.text.slice(1);
+    }
     speechSynthesis.speak(newUtt);
   }, 0);
 };
