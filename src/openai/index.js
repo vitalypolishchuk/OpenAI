@@ -22,7 +22,7 @@ export default function MainPage() {
     window.addEventListener("resize", handleOverlayResize);
 
     return () => {
-      videoRef.current.onloadeddata = null;
+      // videoRef.current.onloadeddata = null;
       window.removeEventListener("click", handleCloseVideo);
       window.removeEventListener("click", handleOverlayResize);
     };
