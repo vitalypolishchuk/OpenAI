@@ -45,6 +45,7 @@ export default function MainPage() {
     refVideoCenter.current.style.opacity = "0";
     refOverlay.current.classList.add("hidden");
     refOverlay.current.style.opacity = "0";
+    videoRef.current.play();
   }
 
   function handleOverlayResize() {
