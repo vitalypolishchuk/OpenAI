@@ -1,0 +1,115 @@
+@import "../../sass/main.scss"; // styles applied for every page (openai, chatbot, dalle2 etc.)
+@import "./main.scss"; // styles applied for every openai page
+
+// a:hover {
+//   color: $clr-primary-hover;
+// }
+
+.link-color:hover {
+  color: $clr-primary-hover;
+}
+
+.openai-links {
+  min-height: 300px;
+  background-color: #000000;
+  padding: 5rem 0;
+
+  &__center {
+    width: 93%;
+    margin-inline: auto;
+  }
+
+  &__container {
+    // display: flex;
+    color: #ffffff;
+    margin-top: 3rem;
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  &__container-items {
+    // display: inline-block;
+    flex: 0 0 50%;
+
+    &:nth-child(1),
+    &:nth-child(2) {
+      margin-bottom: 4rem;
+    }
+
+    @include respond(lg) {
+      flex: 0 0 25%;
+
+      &:nth-child(1),
+      &:nth-child(2) {
+        margin-bottom: 0rem;
+      }
+    }
+  }
+
+  &__header {
+    display: inline-block;
+    margin-bottom: 1rem;
+    font-weight: bold;
+    font-size: 0.98rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  &__list {
+    li {
+      padding: 0.27rem 0;
+      font-size: min(1.16rem, 16px);
+    }
+  }
+}
+.openai-footer {
+  background-color: #000000;
+  color: #ffffff;
+  padding-bottom: 1.5rem;
+
+  &__center {
+    width: 93%;
+    margin-inline: auto;
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  &__left {
+    flex: 0 0 70%;
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+
+    @include respond(md) {
+      flex: 0 0 75%;
+      margin-bottom: 0rem;
+    }
+
+    a {
+      font-size: 1.08rem;
+      letter-spacing: 0.5px;
+      padding-right: 2rem;
+    }
+  }
+
+  &__right {
+    flex: 0 0 50%;
+    display: flex;
+    font-size: 1.5rem;
+    height: fit-content;
+    margin-bottom: 0;
+
+    @include respond(md) {
+      flex: 0 0 25%;
+      justify-content: space-between;
+    }
+
+    a {
+      padding-right: 2rem;
+
+      @include respond(md) {
+        padding-right: 0;
+      }
+    }
+  }
+}
