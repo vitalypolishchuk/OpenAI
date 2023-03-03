@@ -28,7 +28,13 @@ const headers = {
   Authorization: `Bearer ${API_KEY}`,
 };
 
-export async function apiCall(messages = "Say this is a test", model = "gpt-3.5-turbo", signal) {
+const messages = [
+  { role: "user", content: "Who won the world series in 2020?" },
+  { role: "assistant", content: "The Los Angeles Dodgers won the World Series in 2020." },
+  { role: "user", content: "Where was it played?" },
+];
+
+export async function apiCall(messages, model = "gpt-3.5-turbo", signal) {
   data.messages = messages;
   data.model = model;
 
