@@ -36,7 +36,7 @@ const userId = process.env.REACT_APP_TEXT_TO_SPEECH_USER_ID;
 const secretKey = process.env.REACT_APP_TEXT_TO_SPEECH_KEY;
 
 export default function ChatGPT() {
-  const [model, setModel] = useState("text-davinci-003");
+  const [model, setModel] = useState("gpt-3.5-turbo");
   const [mainContainerHeight, setMainContainerHeight] = useState(100);
   const [isListening, setIsListening] = useState(false);
   const [autoPlay, setAutoPlay] = useState(true);
@@ -66,7 +66,7 @@ export default function ChatGPT() {
   const [chatLog, setChatLog] = useState({
     chatLogId: "",
     title: "New Chat",
-    data: [{ user: "gpt", message: "how can I help you today?", soundUrl: "", messageId: uniqueId() }],
+    data: [{ role: "assistant", message: "how can I help you today?", soundUrl: "", messageId: uniqueId() }],
   }); // current chat
   const [hasRendered, setHasRendered] = useState(false);
   const [chatTranscript, setChatTranscript] = useState("");
@@ -170,7 +170,7 @@ export default function ChatGPT() {
     if (chatLog.data.length === 3 && chatLog.chatLogId === "") {
       // we set chatLogId
       const chatLogId = uniqueId();
-      const firstMessage = chatLog.data.find((msg) => msg.user === "me");
+      const firstMessage = chatLog.data.find((msg) => msg.role === "user");
       setChatLog({ chatLogId: chatLogId, title: firstMessage.message, data: [...chatLog.data] });
     }
 
@@ -189,9 +189,11 @@ export default function ChatGPT() {
 
     refTextBox.current.scrollTop = refTextBox.current.scrollHeight;
     positionCancelRequest();
-    if (chatLog.data[chatLog.data.length - 1].user === "gpt") return;
+    if (chatLog.data[chatLog.data.length - 1].role === "assistant") return;
 
-    const message = chatLog.data[chatLog.data.length - 1].message;
+    const messages = chatLog.data.map((chat) => {
+      return { role: chat.role, content: chat.message };
+    });
 
     const fetchData = async () => {
       const controllerRequest = new AbortController();
@@ -199,13 +201,13 @@ export default function ChatGPT() {
       setShowStopGenerating(true);
       try {
         const context = chatLog.data.map((objMsg) => objMsg.message);
-        const response = await apiCall(message, model, controllerRequest.signal);
+        const response = await apiCall(messages, model, controllerRequest.signal);
         if (autoPlay) speak(response.message, setStartSpeaking);
         const newMessageId = uniqueId();
         setChatLog({
           chatLogId: chatLog.chatLogId,
           title: chatLog.title,
-          data: [...chatLog.data, { user: "gpt", message: response.message, soundUrl: "", messageId: newMessageId }],
+          data: [...chatLog.data, { role: "assistant", message: response.message, soundUrl: "", messageId: newMessageId }],
         });
         if (autoPlay) setStartSpeaking(newMessageId);
       } catch (err) {
@@ -400,7 +402,7 @@ export default function ChatGPT() {
     resetTranscript("");
     // setIsListening(false);
     if (text === "") return;
-    setChatLog({ chatLogId: chatLog.chatLogId, title: chatLog.title, data: [...chatLog.data, { user: "me", message: text }] });
+    setChatLog({ chatLogId: chatLog.chatLogId, title: chatLog.title, data: [...chatLog.data, { role: "user", message: text }] });
     setText("");
   }
 
@@ -410,7 +412,7 @@ export default function ChatGPT() {
     setChatLog({
       chatLogId: "",
       title: "New Chat",
-      data: [{ user: "gpt", message: "how can I help you today?", soundUrl: "", messageId: uniqueId() }],
+      data: [{ role: "assistant", message: "how can I help you today?", soundUrl: "", messageId: uniqueId() }],
     });
   }
 
@@ -586,8 +588,8 @@ export default function ChatGPT() {
         </div>
         <div className="gpt-additional-menu">
           <select onChange={(e) => setModel(e.target.value)} className="gpt-additional-menu__engine" name="model" id="model">
-            <option value="text-davinci-003">text-davinci-003</option>
-            <option value="code-davinci-002">code-davinci-002</option>
+            <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
+            <option value="gpt-3.5-turbo-0301">gpt-3.5-turbo-0301</option>
           </select>
           <button className="gpt-additional-menu__autoplay" onClick={() => setAutoPlay(!autoPlay)}>
             <span className={`${autoPlay ? "" : "none"}`}>
@@ -689,6 +691,7 @@ export default function ChatGPT() {
               ref={refMicrophone}
               className="microphone none"
               onClick={() => {
+                setStartSpeaking("");
                 setIsListening(!isListening);
               }}
             >
