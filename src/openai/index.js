@@ -26,7 +26,7 @@ export default function MainPage() {
     return () => {
       // videoRef.current.onloadeddata = null;
       window.removeEventListener("click", handleCloseVideo);
-      window.removeEventListener("click", handleOverlayResize);
+      window.removeEventListener("resize", handleOverlayResize);
     };
   }, []);
 
@@ -53,7 +53,6 @@ export default function MainPage() {
   function handleOverlayResize() {
     if (refOverlay.current.classList.contains("hidden")) return;
     refOverlay.current.style.height = window.innerHeight + "px";
-    console.log(refOverlay.current);
     refOverlay.current.style.width = window.innerWidth + "px";
   }
 
