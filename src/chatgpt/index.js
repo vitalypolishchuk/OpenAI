@@ -691,6 +691,7 @@ export default function ChatGPT() {
               ref={refMicrophone}
               className="microphone none"
               onClick={() => {
+                setStartSpeaking("");
                 setIsListening(!isListening);
               }}
             >
