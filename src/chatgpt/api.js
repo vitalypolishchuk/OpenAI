@@ -32,14 +32,10 @@ export async function apiCall(messages = "Say this is a test", model = "gpt-3.5-
   data.messages = messages;
   data.model = model;
 
-  console.log(data);
-
   try {
     const response = await openai.axios.post(openai.basePath + url, data, { headers: headers, signal });
-    console.log(response.data.choices);
     return { message: response.data.choices[0].message.content };
   } catch (err) {
     throw err;
   }
-  // res.json({ message: response.data.choices[0].text });
 }
