@@ -1,9 +1,8 @@
 import "./sass/main.scss";
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
-import { createSpeechlySpeechRecognition } from "@speechly/speech-recognition-polyfill";
+// import { createSpeechlySpeechRecognition } from "@speechly/speech-recognition-polyfill";
 import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
 import { speak, stop } from "./speechSynthesis";
-import axios from "axios";
 import { v4 as uniqueId } from "uuid";
 import { cloneDeep } from "lodash";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -27,13 +26,13 @@ import ChatMessage from "./ChatMessage";
 import { apiCall, abortRequest } from "./api";
 
 // Voice Recognition API. If the quota is exceeded, set up new appId from Speechly API.
-const appId = process.env.REACT_APP_SPEECHLY_API_KEY;
+// const appId = process.env.REACT_APP_SPEECHLY_API_KEY;
 // const SpeechlySpeechRecognition = createSpeechlySpeechRecognition(appId);
 // SpeechRecognition.applyPolyfill(SpeechlySpeechRecognition);
 
 // text to speech API
-const userId = process.env.REACT_APP_TEXT_TO_SPEECH_USER_ID;
-const secretKey = process.env.REACT_APP_TEXT_TO_SPEECH_KEY;
+// const userId = process.env.REACT_APP_TEXT_TO_SPEECH_USER_ID;
+// const secretKey = process.env.REACT_APP_TEXT_TO_SPEECH_KEY;
 
 export default function ChatGPT() {
   const [model, setModel] = useState("gpt-3.5-turbo");
