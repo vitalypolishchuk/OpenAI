@@ -25,6 +25,8 @@ import barsSvg from "../additional/bars.svg";
 import ChatMessage from "./ChatMessage";
 import { apiCall, abortRequest } from "./api";
 
+// new message
+
 // Voice Recognition API. If the quota is exceeded, set up new appId from Speechly API.
 // const appId = process.env.REACT_APP_SPEECHLY_API_KEY;
 // const SpeechlySpeechRecognition = createSpeechlySpeechRecognition(appId);
