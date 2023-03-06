@@ -41,26 +41,6 @@ export default function ChatGPT() {
   const [autoPlay, setAutoPlay] = useState(true);
   const [isSubmitted, setIsSubmitted] = useState(true);
   const [text, setText] = useState("");
-  // const [chats, setChats] = useState([
-  //   {
-  //     chatLogId: "12",
-  //     title: "GET Request Generation Example",
-  //     data: [
-  //       { user: "gpt", message: "how can I help you? 12" },
-  //       { user: "me", message: "Say this is a test 12" },
-  //     ],
-  //   },
-  //   {
-  //     chatLogId: "13",
-  //     title: "V | Coding",
-  //     data: [{ user: "gpt", message: "how can I help you? 13" }],
-  //   },
-  //   {
-  //     chatLogId: "14",
-  //     title: "Read and write me a text to describe",
-  //     data: [{ user: "gpt", message: "how can I help you? 13" }],
-  //   },
-  // ]); // all chats
   const [chats, setChats] = useState([]);
   const [chatLog, setChatLog] = useState({
     chatLogId: "",
