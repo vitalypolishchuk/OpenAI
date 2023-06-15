@@ -1,9 +1,9 @@
 @import "../../sass/main.scss";
 @import "./abstracts/variables.scss"; // variables are defined after "main.scss", because main.scss have their own variables. We need to overwrite them.
 
-// body {
-//   background-color: $clr-primary;
-// }
+body {
+  background-color: $clr-primary;
+}
 
 /* width */
 ::-webkit-scrollbar {
