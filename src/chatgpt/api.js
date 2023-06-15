@@ -39,7 +39,9 @@ export async function apiCall(messages, model = "gpt-3.5-turbo", signal) {
   data.model = model;
 
   try {
+    console.log(data);
     const response = await openai.axios.post(openai.basePath + url, data, { headers: headers, signal });
+    console.log(response);
     return { message: response.data.choices[0].message.content };
   } catch (err) {
     throw err;
