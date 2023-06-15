@@ -90,7 +90,7 @@ export default function ChatGPT() {
     // calc the height for .gpt-textbox
     refTextBox.current.style.height = window.innerHeight - headerHeight - chatGptHeight - 2.5 + "px";
     // containerHeight is the height of textarea, 60 is the additional height of the chat-gpt text
-    setMainContainerHeight(window.innerHeight - containerHeight - 60);
+    setMainContainerHeight(window.innerHeight - containerHeight);
   }, [containerHeight, innerHeight]);
 
   useEffect(() => {
